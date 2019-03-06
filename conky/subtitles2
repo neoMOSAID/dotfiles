@@ -32,6 +32,7 @@ override_utf8_locale yes
 
 TEXT
 
+${if_match "${exec cat /home/mosaid/.i3/.ws}" != "8" }\
 ${if_match "${exec pidof /usr/bin/mpv}" != "" }\
 ${if_match "${exec pidof smplayer}" == "" }\
 ${execi 3 cat "/home/mosaid/.lastLyrics" |sed -n '37,$p'| head -n 31 }
@@ -42,6 +43,7 @@ ${execi 3 cat "/home/mosaid/.lastLyrics" |sed -n '37,$p'| head -n 31 }
 ${endif}\
 ${if_match "${exec /home/mosaid/.i3/conky/conky-helper.sh}" == "playing" }\
 ${execi 3 cat "/home/mosaid/.lastLyrics" |sed -n '36,$p'| head -n 31 }
+${endif}\
 ${endif}\
 
 

@@ -47,7 +47,8 @@ case "$percentage" in
            [1-9]|1[0-9])   COLOR="#FF0000"
                            ICON=
                            if [[ "$state" == "discharging" ]] ; then
-                               alarm 300 >/dev/null
+                               #alarm 300 >/dev/null
+                               ddd=0
                            fi ;;
                  2[0-9])   COLOR="#fb7603"
                            ICON=

@@ -78,10 +78,10 @@ fi
 echo -n " "
 
 ## outgoing
-#echo -n "$OUTLABEL"
-#tx_kib=$(( $tx_rate >> 10 ))
-#if hash bc 2>/dev/null && [[ "$tx_rate" -gt 1048576 ]]; then
-#  printf '%sM' "`echo "scale=1; $tx_kib / 1024" | bc`"
-#else
-#  echo -n "${tx_kib}K"
-#fi
+echo -n "$OUTLABEL"
+tx_kib=$(( $tx_rate >> 10 ))
+if hash bc 2>/dev/null && [[ "$tx_rate" -gt 1048576 ]]; then
+  printf '%sM' "`echo "scale=1; $tx_kib / 1024" | bc`"
+else
+  echo -n "${tx_kib}K"
+fi

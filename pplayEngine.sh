@@ -1,6 +1,7 @@
 #!/bin/bash
-script="/home/mosaid/gDrive/gDrive/www/phpTests/Lyrics2/populate.sh"
-play="/home/mosaid/gDrive/gDrive/linux/scripts0/play.sh" 
+getLyrics="/home/mosaid/gDrive/gDrive/www/phpTests/Lyrics2/populate.sh"
+getLocalLyrics="/home/mosaid/gDrive/gDrive/linux/scripts0/lyrics.sh"
+pplayScript="/home/mosaid/gDrive/gDrive/linux/scripts0/pplay/newplay.sh"
 mpcplay="/home/mosaid/gDrive/gDrive/linux/scripts2/mympc.sh"
 
 scriptname=$( basename "$0" )
@@ -11,31 +12,39 @@ if (( $is_running > 1 )) && [ -z "$1" ] ; then
 fi
 
 while true ; do
-	#killengine=$(cat /home/mosaid/.i3/.killengine)	
-	#if (( $killengine == 1 )) ; then
-	#	echo "0" >| /home/mosaid/.i3/.killengine
-	#	exit
-	#fi
 	sleep 5
-
-	n=$( bash "$play" o 2>/dev/null|awk -F/ '{print $1}' )
-	d=$( cat /home/mosaid/.pplaymode )
-	if ! [[ -z "$n" ]] && (( "$d" != 5 )) ; then
-		n=$((n+1))
-		lastPlayed=$(cat /home/mosaid/.pplayLastPlayed )
-		nowPlaying=$( bash "$play" l |sed -n "$n,$"p |head -1)
+    pplay_pid="$(cat "${HOME}/.pplay_pid")"
+    if ps -p $pplay_pid > /dev/null ; then
+		nowPlaying=$( bash "$pplayScript" title )
+        if `echo "$nowPlaying" | grep 'watch?v=' >/dev/null`
+            then continue
+        fi
+        lastPlayed=$( cat "${HOME}/.pplay_engine_last" )
 		if [[ "$nowPlaying" != "$lastPlayed" ]] ; then
-			echo "$nowPlaying" >| /home/mosaid/.pplayLastPlayed
-			bash "$script"  
+            echo "$nowPlaying" >| /home/mosaid/.pplay_engine_last
+            bash "$pplayScript" saveTitle
+            bash "$pplayScript" saveIndex
+            ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null
+            code=$?
+            if (( code == 0 ))
+                then bash "$getLocalLyrics" 1
+                else bash "$getLyrics"
+            fi
 		fi
 		continue
 	fi
-	if ! mpc --host=127.0.0.1 --port=6601 |grep -F "[paused]" >/dev/null ; then 
+	if ! mpc --host=127.0.0.1 --port=6601 |grep -F "[paused]" >/dev/null ; then
 		lastPlayed=$(cat /home/mosaid/.pplayLastPlayed )
 		nowPlaying=$( bash "$mpcplay" c |cut -d# -f2 )
 		if [[ "$nowPlaying" != "$lastPlayed" ]] ; then
 			echo "$nowPlaying" >| /home/mosaid/.pplayLastPlayed
-			bash "$script"  
+			bash "$getLyrics"
+            ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null
+            code=$?
+            if (( code == 0 ))
+                then bash "$getLocalLyrics" 1
+                else bash "$getLyrics"
+            fi
 		fi
 		continue
 	fi
