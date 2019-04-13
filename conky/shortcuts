@@ -47,10 +47,10 @@ ${color lightblue}\
 
 WIN+Return${goto 230} lxterminal
 WIN+t${goto 230} lxterminal
-WIN+y${goto 230} xfce4-terminal
+control+Return${goto 230} lxterminal
 WIN+x${goto 230} "rofi -show combi "
 WIN+w${goto 230} ~/.i3/mylocate.sh
-ALT+s${goto 230} ~/.i3/is_workspace_empty.sh
+ALT+s${goto 230} ~/.i3/rofi-icons.sh
 WIN+c${goto 230} "i3-dmenu-desktop --dmenu='dmenu...
 Print${goto 230} ~/.i3/screenshot.sh 1
 ALT+control+p${goto 230} ~/.i3/screenshot.sh 1
@@ -61,13 +61,23 @@ ALT+n${goto 230} media-controls.sh n
 ALT+b${goto 230} media-controls.sh p
 ALT+v${goto 230} media-controls.sh v
 ALT+c${goto 230} media-controls.sh vv
+ALT+r${goto 230} media-controls.sh r
 ALT+w${goto 230} pplay/newplay.sh
-ALT+k${goto 230} conkyfont.sh
+ALT+g${goto 230} conkyfont.sh
 ALT+h${goto 230} ~/.i3/wchanger.sh dir
-ALT+j${goto 230} ~/.i3/wchanger.sh sdir
-ALT+d${goto 230} ~/.i3/wchanger.sh p
-ALT+f${goto 230} ~/.i3/wchanger.sh
-ALT+g${goto 230} myBash_functions.sh eglllr
+ALT+j${goto 230} ~/.i3/wchanger.sh favd
+ALT+k${goto 230} ~/.i3/wchanger.sh favm
+ALT+l${goto 230} ~/.i3/wchanger.sh favs
+ALT+m${goto 230} ~/.i3/wchanger.sh u
+ALT+comma${goto 230} ~/.i3/wchanger.sh -
+ALT+semicolon${goto 230} ~/.i3/wchanger.sh +
+ALT+colon${goto 230} ~/.i3/wchanger.sh fix
+ALT+ugrave${goto 230} ~/.i3/wchanger.sh add
+ALT+dollar${goto 230} ~/.i3/wchanger.sh pause
+ALT+dead_circumflex${goto 230} ~/.i3/wchanger.sh setmode
+ALT+asterisk${goto 230} ~/.i3/wchanger.sh rm
+ALT+exclam${goto 230} ~/.i3/wchanger.sh list
+ALT+f${goto 230} myBash_functions.sh eglllr
 ALT+t${goto 230} myBash_functions.sh ttor
 WIN+n${goto 230} playFromClipboard.sh npr
 control+less${goto 230} ws.sh ++

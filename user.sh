@@ -33,17 +33,17 @@ function themenu(){
     case "$ch" in
         logout)
                         result=$(zenity_progress "logout" )
-                        if [[ "result" == "0" ]] ; then
+                        if [[ "$result" == "0" ]] ; then
                             i3-msg exit
                         fi ;;
         shutdown)
                         result=$(zenity_progress "shutdown" )
-                        if [[ "result" == "0" ]] ; then
+                        if [[ "$result" == "0" ]] ; then
                             systemctl poweroff
                         fi ;;
         reboot)
                         result=$(zenity_progress "reboot" )
-                        if [[ "result" == "0" ]] ; then
+                        if [[ "$result" == "0" ]] ; then
                             systemctl reboot
                         fi ;;
         joey)           nohup bash "$joey"  </dev/null >/dev/null 2>&1 &  ;;

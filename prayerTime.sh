@@ -3,7 +3,7 @@
 msgId="991148"
 scriptname=$( basename "$0" )
 is_running=$( pgrep -cf "$scriptname" )
-if (( $is_running > 1 )) ; then
+if (( $is_running > 1 )) && [[ -z "$1" ]] ; then
     >&2 echo $scriptname is running.
     exit 0
 fi
@@ -18,7 +18,12 @@ CURL 'https://www.islamicfinder.org/' \
 |sed -n -e '/Upcoming Prayer/{N;N;N;N;N;N;N;s/<[^>]*>//g;s/\s\s*/ /g;p}' \
 >| "${HOME}/.nextPrayer"
 
+if ! [[ -z "$1" ]] ; then exit ; fi
+
 while true ; do
+    sleep 1
+    code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
+    (( code == 0 )) && sleep 30 ; continue
     nextPrayerName="$(cat "${HOME}/.nextPrayer" | cut -d' ' -f4 )"
     nextPrayerTime="$(cat "${HOME}/.nextPrayer" | cut -d' ' -f5 )"
     h=$(echo $nextPrayerTime|cut -d: -f1 )
@@ -47,5 +52,4 @@ while true ; do
             continue
     fi
     echo " Upcoming Prayer $nextPrayerName $h:$m:$s" >| "${HOME}/.nextPrayer"
-    sleep 1
 done

@@ -25,16 +25,18 @@ alignment top_left
 minimum_size 180 5
 maximum_width 800
 gap_x 15
-gap_y 20
+gap_y 60
 
 uppercase no
 override_utf8_locale yes
 
 TEXT
-
 ${if_match "${exec cat /home/mosaid/.i3/.ws}" != "8" }\
+${if_match "${exec cat /home/mosaid/.i3/.ws}" != "10" }\
+${if_match "${exec cat /home/mosaid/.i3/.ws}" != "13" }\
 ${if_match "${exec pidof /usr/bin/mpv}" != "" }\
 ${if_match "${exec pidof smplayer}" == "" }\
+#${exec /home/mosaid/gDrive/gDrive/linux/scripts3/xcolor.sh }
 ${execi 3 cat "/home/mosaid/.lastLyrics" |head -n 36}\
 ${endif}\
 ${endif}\
@@ -43,6 +45,8 @@ ${execi 3 cat "/home/mosaid/.lastLyrics" |head -n 36}\
 ${endif}\
 ${if_match "${exec /home/mosaid/.i3/conky/conky-helper.sh}" == "playing" }\
 ${execi 3 cat "/home/mosaid/.lastLyrics" |head -n 36}\
+${endif}
+${endif}
 ${endif}
 ${endif}
 

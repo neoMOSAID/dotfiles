@@ -1,5 +1,5 @@
 #!/bin/bash
-size=55
+size=60
 myPath="${HOME}/gDrive/gDrive/linux"
 pplayScript="${myPath}/scripts0/pplay/newplay.sh"
 pid="$( bash "$pplayScript" pid )"

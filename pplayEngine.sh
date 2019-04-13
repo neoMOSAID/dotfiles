@@ -24,11 +24,14 @@ while true ; do
             echo "$nowPlaying" >| /home/mosaid/.pplay_engine_last
             bash "$pplayScript" saveTitle
             bash "$pplayScript" saveIndex
-            ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null
-            code=$?
+            code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
             if (( code == 0 ))
-                then bash "$getLocalLyrics" 1
-                else bash "$getLyrics"
+                then
+                    >&2 echo "getting local lyrics"
+                    bash "$getLocalLyrics" 1 mpv
+                else
+                    bash "$getLyrics"
+                    >&2 echo "getting remote lyrics"
             fi
 		fi
 		continue
@@ -39,8 +42,7 @@ while true ; do
 		if [[ "$nowPlaying" != "$lastPlayed" ]] ; then
 			echo "$nowPlaying" >| /home/mosaid/.pplayLastPlayed
 			bash "$getLyrics"
-            ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null
-            code=$?
+            code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
             if (( code == 0 ))
                 then bash "$getLocalLyrics" 1
                 else bash "$getLyrics"

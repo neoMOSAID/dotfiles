@@ -1,5 +1,6 @@
 
 set $mod Mod4
+set $altgr mod5
 
 #i3-gaps
 #gaps inner 12
@@ -13,13 +14,14 @@ floating_modifier $mod
 #bindsym    $mod+Return 		exec --no-startup-id i3-sensible-terminal
 bindsym     $mod+Return 		exec --no-startup-id lxterminal
 bindsym     $mod+t 			    exec --no-startup-id lxterminal
-bindcode    $mod+84 			exec --no-startup-id lxterminal
-bindsym     $mod+y 			    exec --no-startup-id xfce4-terminal
+bindsym     control+Return 			exec --no-startup-id lxterminal
+
+
 
 
 # kill focused window
  bindsym     $mod+Shift+Q 	    kill
- bindsym     mod1+x 		        kill
+ bindsym     mod1+x 		    kill
  bindsym     button3 	        floating toggle
 
 # start rofi (a program launcher)
@@ -35,16 +37,16 @@ bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b
 #bindsym $mod+m focus right
 
 # alternatively, you can use the cursor keys:
- bindsym $mod+Left 	focus left
- bindsym $mod+Down 	focus down
- bindsym $mod+Up 	focus up
- bindsym $mod+Right 	focus right
+ bindsym $mod+Left 	        focus left
+ bindsym $mod+Down 	        focus down
+ bindsym $mod+Up 	        focus up
+ bindsym $mod+Right     	focus right
 
  # move focused window
- bindsym $mod+Shift+j move left
- bindsym $mod+Shift+k move down
- bindsym $mod+Shift+l move up
- bindsym $mod+Shift+M move right
+ bindsym $mod+Shift+j       move left
+ bindsym $mod+Shift+k       move down
+ bindsym $mod+Shift+l       move up
+ bindsym $mod+Shift+M       move right
 
  # alternatively, you can use the cursor keys:
  bindsym $mod+Shift+Left 	move left
@@ -92,34 +94,52 @@ set $ws9	       "9"
 set $ws10 	       "10"
 set $ws11 	       "11"
 set $ws12 	       "12"
+set $ws13 	       "13"
 
 # switch to workspace
  bindsym $mod+ampersand       		 workspace $ws1
  bindsym $mod+eacute 		         workspace $ws2
  bindsym $mod+quotedbl 		         workspace $ws3
  bindsym $mod+apostrophe 	         workspace $ws4
- bindsym $mod+parenleft 		         workspace $ws5
- bindsym $mod+minus 		             workspace $ws6
+ bindsym $mod+parenleft 		     workspace $ws5
+ bindsym $mod+minus 		         workspace $ws6
  bindsym $mod+egrave 		         workspace $ws7
  bindsym $mod+underscore 	         workspace $ws8
  bindsym $mod+ccedilla 		         workspace $ws9
  bindsym $mod+agrave 		         workspace $ws10
  bindsym $mod+parenright 		     workspace $ws11
  bindsym $mod+equal       		     workspace $ws12
+ bindsym $mod+twosuperior       	 workspace $ws13
+
+# switch to workspace
+ bindsym control+ampersand       		 workspace "14"
+ bindsym control+eacute 		         workspace "15"
+ bindsym control+quotedbl 		         workspace "16"
+ bindsym control+apostrophe 	         workspace "17"
+ bindsym control+parenleft 		         workspace "18"
+ bindsym control+minus 		             workspace "19"
+ bindsym control+egrave 		         workspace "20"
+ bindsym control+underscore 	         workspace "21"
+ bindsym control+ccedilla 		         workspace "22"
+ bindsym control+agrave 		         workspace "23"
+ bindsym control+parenright 		     workspace "24"
+ bindsym control+equal       		     workspace "25"
+ bindsym $mod+control+mod1+colon         workspace "xx"
 
  # move focused container to workspace
  bindsym $mod+Shift+ampersand      	move container to workspace $ws1
- bindsym $mod+Shift+eacute  	        move container to workspace $ws2
+ bindsym $mod+Shift+eacute  	    move container to workspace $ws2
  bindsym $mod+Shift+quotedbl  	    move container to workspace $ws3
- bindsym $mod+Shift+apostrophe  	    move container to workspace $ws4
+ bindsym $mod+Shift+apostrophe  	move container to workspace $ws4
  bindsym $mod+Shift+parenleft  	    move container to workspace $ws5
  bindsym $mod+Shift+minus  	        move container to workspace $ws6
- bindsym $mod+Shift+egrave  	        move container to workspace $ws7
- bindsym $mod+Shift+underscore  	    move container to workspace $ws8
+ bindsym $mod+Shift+egrave  	    move container to workspace $ws7
+ bindsym $mod+Shift+underscore  	move container to workspace $ws8
  bindsym $mod+Shift+ccedilla  	    move container to workspace $ws9
- bindsym $mod+Shift+agrave  	        move container to workspace $ws10
- bindsym $mod+Shift+parenright  	    move container to workspace $ws11
+ bindsym $mod+Shift+agrave  	    move container to workspace $ws10
+ bindsym $mod+Shift+parenright  	move container to workspace $ws11
  bindsym $mod+Shift+equal      	    move container to workspace $ws12
+ bindsym $mod+Shift+twosuperior     move container to workspace $ws13
 
  # dual monitor settings
  #exec_always --no-startup-id xrandr --output HDMI-1 --right-of eDP-1
@@ -139,11 +159,12 @@ assign [class="Transmission-gtk"] $ws1
 assign [class="Firefox"] $ws2
 #assign [class="Clementine|mpv|vlc"] $ws3
 assign [class="libreoffice-calc|libreoffice-writer"] $ws5
+assign [class="Chromium"] $ws5
 assign [class="Evince|Transmission-gtk"] $ws6
 assign [class="Tor Browser"] $ws7
 assign [class="VirtualBox Manager"] $ws7
 assign [class="VirtualBox Machine"] $ws7
-assign [class="obs|explorer.exe|Wine|huniepop.exe|joey_pc.exe"] $ws10
+assign [class="obs|explorer.exe|Wine|huniepop.exe|joey_pc.exe"] $ws11
 #
 #
 #some window parameters
@@ -193,6 +214,9 @@ mode "resize" {
 # finds out, if available)
 
 bar {
+#mode hide
+#hidden_state hide
+#modifier Mod1
     font pango:FontAwesome 15
     status_command i3blocks -c ~/.i3/i3blocks.conf
     position 	top
@@ -235,13 +259,23 @@ bindsym mod1+n				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/m
 bindsym mod1+b				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh p
 bindsym mod1+v				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh v
 bindsym mod1+c				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh vv
+bindsym mod1+r				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh r
 bindsym mod1+w				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/pplay/newplay.sh
-bindsym mod1+k				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts1/conkyfont.sh
+bindsym mod1+g				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts1/conkyfont.sh
 bindsym mod1+h				        exec --no-startup-id  ~/.i3/wchanger.sh dir
-bindsym mod1+j				        exec --no-startup-id  ~/.i3/wchanger.sh sdir
-bindsym mod1+d				        exec --no-startup-id  ~/.i3/wchanger.sh p
-bindsym mod1+f				        exec --no-startup-id  ~/.i3/wchanger.sh
-bindsym mod1+g				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/myBash_functions.sh eglllr
+bindsym mod1+j				        exec --no-startup-id  ~/.i3/wchanger.sh favd
+bindsym mod1+k				        exec --no-startup-id  ~/.i3/wchanger.sh favm
+bindsym mod1+l				        exec --no-startup-id  ~/.i3/wchanger.sh favs
+bindsym mod1+m				        exec --no-startup-id  ~/.i3/wchanger.sh u
+bindsym mod1+comma			    	exec --no-startup-id  ~/.i3/wchanger.sh -
+bindsym mod1+semicolon		    	exec --no-startup-id  ~/.i3/wchanger.sh +
+bindsym mod1+colon		    	    exec --no-startup-id  ~/.i3/wchanger.sh fix
+bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.i3/wchanger.sh add
+bindsym mod1+dollar		    	    exec --no-startup-id  ~/.i3/wchanger.sh pause
+bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.i3/wchanger.sh setmode
+bindsym mod1+asterisk		    	exec --no-startup-id  ~/.i3/wchanger.sh rm
+bindsym mod1+exclam 		    	exec --no-startup-id  ~/.i3/wchanger.sh list
+bindsym mod1+f				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/myBash_functions.sh eglllr
 bindsym mod1+t				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/myBash_functions.sh ttor
 bindsym $mod+n				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/playFromClipboard.sh npr
 bindsym control+less			    exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/ws.sh ++
@@ -288,7 +322,7 @@ mode "$mode_display" {
 exec_always --no-startup-id "setxkbmap -model pc104 -layout fr,ar -variant ,, -option grp:alt_shift_toggle"
 
 #switch to greeter and login
- bindsym $mod+twosuperior exec dm-tool switch-to-greeter
+#bindsym $mod+twosuperior exec dm-tool switch-to-greeter
 
 
 set $playFromClipboard play From ClipBoard (c), play next youtube video (v)
