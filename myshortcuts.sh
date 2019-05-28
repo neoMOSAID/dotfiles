@@ -52,9 +52,9 @@ cat ~/.i3/config | grep ^binds\
            s/exec --no-startup-id//g;
            s/$mod/WIN/g;
            s/mod1/ALT/g;
-           s@~/gDrive/gDrive/linux/scripts0/@@g;
-           s@~/gDrive/gDrive/linux/scripts1/@@g;
-           s@~/gDrive/gDrive/linux/scripts2/@@g;
+           s@~/OneDrive/OneDrive/linux/scripts0/@@g;
+           s@~/OneDrive/OneDrive/linux/scripts1/@@g;
+           s@~/OneDrive/OneDrive/linux/scripts2/@@g;
            s/^[ \t]*//g' \
     |awk '{
             printf("%s",$1);

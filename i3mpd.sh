@@ -1,6 +1,6 @@
 #!/bin/bash
 size=60
-myPath="${HOME}/gDrive/gDrive/linux"
+myPath="${HOME}/OneDrive/OneDrive/linux"
 pplayScript="${myPath}/scripts0/pplay/newplay.sh"
 pid="$( bash "$pplayScript" pid )"
 mp=' mpc --host=127.0.0.1 --port=6601 '
@@ -10,7 +10,7 @@ if ps -p "$( bash "$pplayScript" pid )" > /dev/null
             str+="$( bash "$pplayScript" title )"
             case $BLOCK_BUTTON in
                 1)  ${myPath}/scripts0/media-controls.sh pp ;;
-                3)  ${myPath}/scripts0/media-controls.sh pp ;;
+                3)  ${myPath}/scripts0/media-controls.sh n ;;
                 4)  ${myPath}/scripts0/media-controls.sh v ;;
                 5)  ${myPath}/scripts0/media-controls.sh vv ;;
             esac

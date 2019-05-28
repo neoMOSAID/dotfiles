@@ -1,8 +1,8 @@
 #!/bin/bash
-getLyrics="/home/mosaid/gDrive/gDrive/www/phpTests/Lyrics2/populate.sh"
-getLocalLyrics="/home/mosaid/gDrive/gDrive/linux/scripts0/lyrics.sh"
-pplayScript="/home/mosaid/gDrive/gDrive/linux/scripts0/pplay/newplay.sh"
-mpcplay="/home/mosaid/gDrive/gDrive/linux/scripts2/mympc.sh"
+getLyrics="/home/mosaid/OneDrive/OneDrive/www/phpTests/Lyrics2/populate.sh"
+getLocalLyrics="/home/mosaid/OneDrive/OneDrive/linux/scripts0/lyrics.sh"
+pplayScript="/home/mosaid/OneDrive/OneDrive/linux/scripts0/pplay/newplay.sh"
+mpcplay="/home/mosaid/OneDrive/OneDrive/linux/scripts2/mympc.sh"
 
 scriptname=$( basename "$0" )
 is_running=$( pgrep -c "$scriptname" )

@@ -6,7 +6,7 @@ if (( $is_running > 1 )) ; then
   exit 0
 fi
 
-wallhavenPhp="${HOME}/gDrive/gDrive/linux/scripts2/getWallpHaven/db.php"
+wallhavenPhp="${HOME}/OneDrive/OneDrive/linux/scripts2/getWallpHaven/db.php"
 
 function getws () {
     lastWS=$(cat ~/.i3/.ws )

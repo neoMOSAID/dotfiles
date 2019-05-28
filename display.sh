@@ -13,7 +13,7 @@ function hdmiOn(){
         --rotate  normal \
         --output VGA1 --off \
         --output VIRTUAL1 --off \
-        --output DP1 --off 
+        --output DP1 --off
 }
 
 function hdmiOff(){
@@ -28,11 +28,11 @@ function hdmiOff(){
         --rotate  normal
 }
 
-case "$1" in 
+case "$1" in
     extended)
                 hdmiOn
                 notify-send "Display: Extended "
-                bash /home/mosaid/gDrive/gDrive/linux/touchpadSettings.sh
+                bash /home/mosaid/OneDrive/OneDrive/linux/touchpadSettings.sh
                 #pacmd set-card-profile alsa_card.pci-0000_00_1b.0 output:hdmi-stereo+input:analog-stereo
                 #pacmd set-default-sink combined
                 ;;

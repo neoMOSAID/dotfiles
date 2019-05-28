@@ -20,9 +20,9 @@ function zenity_progress(){
             echo $?
 }
 function themenu(){
-    joey="/home/mosaid/gDrive/gDrive/linux/scripts2/joeyThePassion.sh"
+    joey="/home/mosaid/OneDrive/OneDrive/linux/scripts2/joeyThePassion.sh"
     txtreader="/run/media/mosaid/My_Data/Documents/myPrograms/text_reader.exe "
-    pplay='/home/mosaid/gDrive/gDrive/linux/scripts0/play.sh'
+    pplay='/home/mosaid/OneDrive/OneDrive/linux/scripts0/play.sh'
 
     mymenu=( onboard display txtReader joey 6Dif POP tor pplay
     screenshot1 screenshot2 shutdown reboot logout  )
@@ -46,29 +46,30 @@ function themenu(){
                         if [[ "$result" == "0" ]] ; then
                             systemctl reboot
                         fi ;;
-        joey)           nohup bash "$joey"  </dev/null >/dev/null 2>&1 &  ;;
+        joey)           "$joey" ;;
         txtReader)      nohup wine "$txtreader"  </dev/null >/dev/null 2>&1 & ;;
         onboard)        nohup onboard  </dev/null >/dev/null 2>&1 & ;;
-        tor)            bash /home/mosaid/gDrive/gDrive/linux/scripts2/myBash_functions.sh ttor ;;
+        tor)            bash /home/mosaid/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh ttor ;;
         pplay)          bash "$pplay" ;;
         screenshot1)    sleep 0.200 ; bash ~/.i3/screenshot.sh 1 >/dev/null ;;
         screenshot2)    sleep 0.200 ; bash ~/.i3/screenshot.sh 2 >/dev/null ;;
         display)        bash ~/.i3/display.sh default >/dev/null ;;
         POP)
             cd "/home/mosaid/Documents/Prince Of Persia - The Warrior Within"
-            i3-msg "workspace 10"
+            i3-msg "workspace 11"
             nohup wine POP2.EXE </dev/null >/dev/null 2>&1 &  ;;
         6Dif)
             cd "/run/media/mosaid/My_Data/documents/swf"
-            i3-msg "workspace 10"
+            i3-msg "workspace 11"
             wine "$dif6Cmd"
             nohup wine FlashPlayer.exe 6Diff.swf  </dev/null >/dev/null 2>&1 & ;;
     esac
 }
 
+[[ -z "$BLOCK_BUTTON" ]] && [[ "$1" == "menu" ]] && BLOCK_BUTTON=1
 case "$BLOCK_BUTTON" in
     4)
-        ~/.i3/wchanger.sh p >| ~/.i3/wallpaper/wlog
+        ~/.i3/wchanger.sh - >| ~/.i3/wallpaper/wlog
         exit
     ;;
     5)

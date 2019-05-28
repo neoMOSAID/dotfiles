@@ -12,18 +12,18 @@
  bash ~/.i3/screenshot.sh 1| bash ~/.i3/screenshot.sh 1                                 |
  bash ~/.i3/screenshot.sh 2| bash ~/.i3/screenshot.sh 2                                 |
  betterlockscreen --lock | betterlockscreen --lock                                    |
- ~/gDrive/gDrive/linux/scripts0/media-controls.sh pp| ~/gDrive/gDrive/linux/scripts0/media-controls.sh pp        |
- ~/gDrive/gDrive/linux/scripts0/media-controls.sh n| ~/gDrive/gDrive/linux/scripts0/media-controls.sh n         |
- ~/gDrive/gDrive/linux/scripts0/media-controls.sh p| ~/gDrive/gDrive/linux/scripts0/media-controls.sh p         |
- ~/gDrive/gDrive/linux/scripts0/media-controls.sh v| ~/gDrive/gDrive/linux/scripts0/media-controls.sh v         |
- ~/gDrive/gDrive/linux/scripts0/media-controls.sh vv| ~/gDrive/gDrive/linux/scripts0/media-controls.sh vv        |
- ~/gDrive/gDrive/linux/scripts0/play.sh| ~/gDrive/gDrive/linux/scripts0/play.sh                     |
- ~/gDrive/gDrive/linux/scripts1/conkyfont.sh| ~/gDrive/gDrive/linux/scripts1/conkyfont.sh                |
+ ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh pp| ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh pp        |
+ ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh n| ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh n         |
+ ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh p| ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh p         |
+ ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh v| ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh v         |
+ ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh vv| ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh vv        |
+ ~/OneDrive/OneDrive/linux/scripts0/play.sh| ~/OneDrive/OneDrive/linux/scripts0/play.sh                     |
+ ~/OneDrive/OneDrive/linux/scripts1/conkyfont.sh| ~/OneDrive/OneDrive/linux/scripts1/conkyfont.sh                |
  ~/.i3/wchanger.sh dir   | ~/.i3/wchanger.sh dir                                      |
  ~/.i3/wchanger.sh sdir  | ~/.i3/wchanger.sh sdir                                     |
  ~/.i3/wchanger.sh p     | ~/.i3/wchanger.sh p                                        |
  ~/.i3/wchanger.sh       | ~/.i3/wchanger.sh                                          |
- ~/gDrive/gDrive/linux/scripts2/myBash_functions.sh eglllr| ~/gDrive/gDrive/linux/scripts2/myBash_functions.sh eglllr  |
- ~/gDrive/gDrive/linux/scripts2/ws.sh ++| ~/gDrive/gDrive/linux/scripts2/ws.sh ++                    |
- ~/gDrive/gDrive/linux/scripts2/ws.sh --| ~/gDrive/gDrive/linux/scripts2/ws.sh --                    |
+ ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh eglllr| ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh eglllr  |
+ ~/OneDrive/OneDrive/linux/scripts2/ws.sh ++| ~/OneDrive/OneDrive/linux/scripts2/ws.sh ++                    |
+ ~/OneDrive/OneDrive/linux/scripts2/ws.sh --| ~/OneDrive/OneDrive/linux/scripts2/ws.sh --                    |
 ------------------------------------------------------------------------------

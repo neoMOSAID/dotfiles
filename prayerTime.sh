@@ -22,14 +22,14 @@ if ! [[ -z "$1" ]] ; then exit ; fi
 
 while true ; do
     sleep 1
-    code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
-    (( code == 0 )) && sleep 30 ; continue
     nextPrayerName="$(cat "${HOME}/.nextPrayer" | cut -d' ' -f4 )"
     nextPrayerTime="$(cat "${HOME}/.nextPrayer" | cut -d' ' -f5 )"
     h=$(echo $nextPrayerTime|cut -d: -f1 )
     m=$(echo $nextPrayerTime|cut -d: -f2 )
     s=$(echo $nextPrayerTime|cut -d: -f3 )
     if [[ -z "$h" ]] || [[ -z "$m" ]] || [[ -z "$h" ]] ; then
+        code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
+        (( code == 0 )) && sleep 30 ; continue
         CURL 'https://www.islamicfinder.org/' \
         |sed -n -e '/Upcoming Prayer/{N;N;N;N;N;N;N;s/<[^>]*>//g;s/\s\s*/ /g;p}' \
         >| "${HOME}/.nextPrayer"

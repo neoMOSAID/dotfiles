@@ -37,7 +37,7 @@ ${if_match "${exec cat /home/mosaid/.i3/.ws}" != "10" }\
 ${if_match "${exec cat /home/mosaid/.i3/.ws}" != "13" }\
 ${if_match "${exec pidof /usr/bin/mpv}" != "" }\
 ${if_match "${exec pidof smplayer}" == "" }\
-#${exec /home/mosaid/gDrive/gDrive/linux/scripts3/xcolor.sh }
+#${exec /home/mosaid/OneDrive/OneDrive/linux/scripts3/xcolor.sh }
 ${execi 3 cat "/home/mosaid/.lastLyrics" |sed -n '37,$p'| head -n 31 }
 ${endif}\
 ${endif}\

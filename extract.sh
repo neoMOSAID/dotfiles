@@ -22,7 +22,7 @@ case "$file" in
         *.tgz)       tar xzf     "$file"  -C "$dir"    ;;
         *.zip)       unzip       "$file"  -d "$dir"    ;;
         *.Z)         uncompress  "$file"               ;;
-        *.7z)        7z x        "$file"  -o "$dir"    ;;
+        *.7z)        7z x        "$file"  -o"$dir"    ;;
         *)           echo "'$file' cannot be extracted by $SCRIPTNAME" ;;
 esac
 

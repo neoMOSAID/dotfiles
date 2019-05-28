@@ -56,6 +56,8 @@ Print${goto 230} ~/.i3/screenshot.sh 1
 ALT+control+p${goto 230} ~/.i3/screenshot.sh 1
 ALT+control+o${goto 230} ~/.i3/screenshot.sh 2
 WIN+l${goto 230} betterlockscreen --lock
+WIN+n${goto 230} playFromClipboard.sh npr
+WIN+m${goto 230} ~/.i3/user.sh menu
 ALT+space${goto 230} media-controls.sh pp
 ALT+n${goto 230} media-controls.sh n
 ALT+b${goto 230} media-controls.sh p
@@ -63,24 +65,24 @@ ALT+v${goto 230} media-controls.sh v
 ALT+c${goto 230} media-controls.sh vv
 ALT+r${goto 230} media-controls.sh r
 ALT+w${goto 230} pplay/newplay.sh
-ALT+g${goto 230} conkyfont.sh
+ALT+f${goto 230} conkyfont.sh
+ALT+d${goto 230} myBash_functions.sh eglllr
+ALT+t${goto 230} myBash_functions.sh ttor
+control+less${goto 230} ws.sh ++
+control+shift+less${goto 230} ws.sh --
+ALT+g${goto 230} ~/.i3/wchanger.sh x
 ALT+h${goto 230} ~/.i3/wchanger.sh dir
-ALT+j${goto 230} ~/.i3/wchanger.sh favd
-ALT+k${goto 230} ~/.i3/wchanger.sh favm
-ALT+l${goto 230} ~/.i3/wchanger.sh favs
+ALT+j${goto 230} ~/.i3/wchanger.sh setdir
+ALT+k${goto 230} ~/.i3/wchanger.sh fav
+ALT+l${goto 230} ~/.i3/wchanger.sh fav
 ALT+m${goto 230} ~/.i3/wchanger.sh u
 ALT+comma${goto 230} ~/.i3/wchanger.sh -
 ALT+semicolon${goto 230} ~/.i3/wchanger.sh +
 ALT+colon${goto 230} ~/.i3/wchanger.sh fix
-ALT+ugrave${goto 230} ~/.i3/wchanger.sh add
-ALT+dollar${goto 230} ~/.i3/wchanger.sh pause
-ALT+dead_circumflex${goto 230} ~/.i3/wchanger.sh setmode
-ALT+asterisk${goto 230} ~/.i3/wchanger.sh rm
 ALT+exclam${goto 230} ~/.i3/wchanger.sh list
-ALT+f${goto 230} myBash_functions.sh eglllr
-ALT+t${goto 230} myBash_functions.sh ttor
-WIN+n${goto 230} playFromClipboard.sh npr
-control+less${goto 230} ws.sh ++
-control+shift+less${goto 230} ws.sh --
+ALT+ugrave${goto 230} ~/.i3/wchanger.sh af
+ALT+asterisk${goto 230} ~/.i3/wchanger.sh rm
+ALT+dead_circumflex${goto 230} ~/.i3/wchanger.sh setmode
+ALT+dollar${goto 230} ~/.i3/wchanger.sh pause
 ${endif}
 ${endif}

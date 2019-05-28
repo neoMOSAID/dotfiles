@@ -14,7 +14,6 @@ floating_modifier $mod
 #bindsym    $mod+Return 		exec --no-startup-id i3-sensible-terminal
 bindsym     $mod+Return 		exec --no-startup-id lxterminal
 bindsym     $mod+t 			    exec --no-startup-id lxterminal
-bindsym     control+Return 			exec --no-startup-id lxterminal
 
 
 
@@ -42,11 +41,11 @@ bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b
  bindsym $mod+Up 	        focus up
  bindsym $mod+Right     	focus right
 
- # move focused window
- bindsym $mod+Shift+j       move left
- bindsym $mod+Shift+k       move down
- bindsym $mod+Shift+l       move up
- bindsym $mod+Shift+M       move right
+# # move focused window
+# bindsym $mod+Shift+j       move left
+# bindsym $mod+Shift+k       move down
+# bindsym $mod+Shift+l       move up
+# bindsym $mod+Shift+M       move right
 
  # alternatively, you can use the cursor keys:
  bindsym $mod+Shift+Left 	move left
@@ -109,7 +108,7 @@ set $ws13 	       "13"
  bindsym $mod+agrave 		         workspace $ws10
  bindsym $mod+parenright 		     workspace $ws11
  bindsym $mod+equal       		     workspace $ws12
- bindsym $mod+twosuperior       	 workspace $ws13
+ bindsym control+$mod+twosuperior       	 workspace $ws13
 
 # switch to workspace
  bindsym control+ampersand       		 workspace "14"
@@ -140,6 +139,20 @@ set $ws13 	       "13"
  bindsym $mod+Shift+parenright  	move container to workspace $ws11
  bindsym $mod+Shift+equal      	    move container to workspace $ws12
  bindsym $mod+Shift+twosuperior     move container to workspace $ws13
+
+ # move focused container to workspace
+ bindsym $mod+control+Shift+ampersand      	move container to workspace  "14"
+ bindsym $mod+control+Shift+eacute  	    move container to workspace  "15"
+ bindsym $mod+control+Shift+quotedbl  	    move container to workspace  "16"
+ bindsym $mod+control+Shift+apostrophe  	move container to workspace  "17"
+ bindsym $mod+control+Shift+parenleft  	    move container to workspace  "18"
+ bindsym $mod+control+Shift+minus  	        move container to workspace  "19"
+ bindsym $mod+control+Shift+egrave  	    move container to workspace  "20"
+ bindsym $mod+control+Shift+underscore  	move container to workspace  "21"
+ bindsym $mod+control+Shift+ccedilla  	    move container to workspace  "22"
+ bindsym $mod+control+Shift+agrave  	    move container to workspace  "23"
+ bindsym $mod+control+Shift+parenright  	move container to workspace  "24"
+ bindsym $mod+control+Shift+equal      	    move container to workspace  "25"
 
  # dual monitor settings
  #exec_always --no-startup-id xrandr --output HDMI-1 --right-of eDP-1
@@ -172,6 +185,7 @@ for_window [class="mpv|Tor Browser|Transmission-gtk|vlc|Pavucontrol"] floating e
 for_window [class="Gnome-system-monitor|smplayer|Gnome-calculator"] floating enable border normal
 for_window [class="Pidgin|Woeusbgui|Wicd-client.py"] floating enable border normal
 for_window [class="VirtualBox Manager|florence|Florence"] floating enable border normal
+for_window [class="TelegramDesktop"] floating enable border normal
 for_window [class="feh"] floating enable move absolute position 0px 0px
 #for_window [class="VirtualBox Machine"] floating enable, resize set 1601 900, move position 0 0
 
@@ -242,44 +256,32 @@ bar {
 #bindsym XF86TouchpadToggle 	exec --no-startup-id vlc
 
 # Media player controls
- bindsym XF86AudioPlay	 	    exec --no-startup-id playerctl play-pause
+ bindsym XF86AudioPlay	 	        exec --no-startup-id playerctl play-pause
  bindsym XF86AudioPause 	 	    exec --no-startup-id playerctl play-pause
- bindsym XF86AudioNext 	 	    exec --no-startup-id playerctl next
- bindsym XF86AudioPrev 	 	    exec --no-startup-id playerctl previous
+ bindsym XF86AudioNext 	 	        exec --no-startup-id playerctl next
+ bindsym XF86AudioPrev 	 	        exec --no-startup-id playerctl previous
 
  #screenshots
-bindsym Print 	                exec --no-startup-id  ~/.i3/screenshot.sh 1
-bindsym mod1+control+p			exec --no-startup-id  ~/.i3/screenshot.sh 1
-bindsym mod1+control+o			exec --no-startup-id  ~/.i3/screenshot.sh 2
+bindsym Print 	                    exec --no-startup-id  ~/.i3/screenshot.sh 1
+bindsym mod1+control+p			    exec --no-startup-id  ~/.i3/screenshot.sh 1
+bindsym mod1+control+o			    exec --no-startup-id  ~/.i3/screenshot.sh 2
 
 #other keyboard shortcuts
 bindsym $mod+l				        exec --no-startup-id  betterlockscreen --lock
-bindsym mod1+space   	            exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh pp
-bindsym mod1+n				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh n
-bindsym mod1+b				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh p
-bindsym mod1+v				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh v
-bindsym mod1+c				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh vv
-bindsym mod1+r				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/media-controls.sh r
-bindsym mod1+w				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts0/pplay/newplay.sh
-bindsym mod1+g				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts1/conkyfont.sh
-bindsym mod1+h				        exec --no-startup-id  ~/.i3/wchanger.sh dir
-bindsym mod1+j				        exec --no-startup-id  ~/.i3/wchanger.sh favd
-bindsym mod1+k				        exec --no-startup-id  ~/.i3/wchanger.sh favm
-bindsym mod1+l				        exec --no-startup-id  ~/.i3/wchanger.sh favs
-bindsym mod1+m				        exec --no-startup-id  ~/.i3/wchanger.sh u
-bindsym mod1+comma			    	exec --no-startup-id  ~/.i3/wchanger.sh -
-bindsym mod1+semicolon		    	exec --no-startup-id  ~/.i3/wchanger.sh +
-bindsym mod1+colon		    	    exec --no-startup-id  ~/.i3/wchanger.sh fix
-bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.i3/wchanger.sh add
-bindsym mod1+dollar		    	    exec --no-startup-id  ~/.i3/wchanger.sh pause
-bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.i3/wchanger.sh setmode
-bindsym mod1+asterisk		    	exec --no-startup-id  ~/.i3/wchanger.sh rm
-bindsym mod1+exclam 		    	exec --no-startup-id  ~/.i3/wchanger.sh list
-bindsym mod1+f				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/myBash_functions.sh eglllr
-bindsym mod1+t				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/myBash_functions.sh ttor
-bindsym $mod+n				        exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/playFromClipboard.sh npr
-bindsym control+less			    exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/ws.sh ++
-bindsym control+shift+less		    exec --no-startup-id  ~/gDrive/gDrive/linux/scripts2/ws.sh --
+bindsym $mod+n				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/playFromClipboard.sh npr
+bindsym $mod+m      			    exec --no-startup-id  ~/.i3/user.sh menu
+bindsym mod1+space   	            exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh pp
+bindsym mod1+n				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh n
+bindsym mod1+b				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh p
+bindsym mod1+v				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh v
+bindsym mod1+c				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh vv
+bindsym mod1+r				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh r
+bindsym mod1+w				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/pplay/newplay.sh
+bindsym mod1+f				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts1/conkyfont.sh
+bindsym mod1+d				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh eglllr
+bindsym mod1+t				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh ttor
+bindsym control+less			    exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/ws.sh ++
+bindsym control+shift+less		    exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/ws.sh --
 
 #startup
 #exec  		    --no-startup-id wicd-gtk -t
@@ -295,6 +297,7 @@ exec		    --no-startup-id ~/.i3/start-conky.sh
 exec		    --no-startup-id ~/.i3/prayerTime.sh
 exec		    --no-startup-id ~/.i3/pplayEngine.sh
 exec		    --no-startup-id ~/.i3/wchanger-engine.sh
+exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
 exec  	        --no-startup-id redshift
 exec_always	    --no-startup-id numlockx on
 exec_always	    --no-startup-id compton --config ~/.i3/compton.conf
@@ -328,11 +331,28 @@ exec_always --no-startup-id "setxkbmap -model pc104 -layout fr,ar -variant ,, -o
 set $playFromClipboard play From ClipBoard (c), play next youtube video (v)
 mode "$playFromClipboard" {
 
-    bindsym c  exec --no-startup-id ~/gDrive/gDrive/linux/scripts2/playFromClipboard.sh
-    bindsym v  exec --no-startup-id ~/gDrive/gDrive/linux/scripts2/playFromClipboard.sh n
+    bindsym c  exec --no-startup-id ~/OneDrive/OneDrive/linux/scripts2/playFromClipboard.sh
+    bindsym v  exec --no-startup-id ~/OneDrive/OneDrive/linux/scripts2/playFromClipboard.sh n
 
     bindsym Escape mode "default"
 }
 
  bindsym mod1+p mode "$playFromClipboard"
+
+#wallpaper changer keys
+bindsym mod1+g				        exec --no-startup-id  ~/.i3/wchanger.sh x
+bindsym mod1+h				        exec --no-startup-id  ~/.i3/wchanger.sh dir
+bindsym mod1+j				        exec --no-startup-id  ~/.i3/wchanger.sh setdir
+bindsym mod1+k				        exec --no-startup-id  ~/.i3/wchanger.sh fav
+bindsym mod1+l				        exec --no-startup-id  ~/.i3/wchanger.sh fav
+bindsym mod1+m				        exec --no-startup-id  ~/.i3/wchanger.sh u
+bindsym mod1+comma			    	exec --no-startup-id  ~/.i3/wchanger.sh -
+bindsym mod1+semicolon		    	exec --no-startup-id  ~/.i3/wchanger.sh +
+bindsym mod1+colon		    	    exec --no-startup-id  ~/.i3/wchanger.sh fix
+bindsym mod1+exclam 		    	exec --no-startup-id  ~/.i3/wchanger.sh list
+bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.i3/wchanger.sh af
+bindsym mod1+asterisk		    	exec --no-startup-id  ~/.i3/wchanger.sh rm
+bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.i3/wchanger.sh setmode
+bindsym mod1+dollar		    	    exec --no-startup-id  ~/.i3/wchanger.sh pause
+
 
