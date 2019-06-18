@@ -1,7 +1,8 @@
 #!/bin/bash
 
-wallhavenScript="${HOME}/OneDrive/OneDrive/linux/scripts2/getWallpHaven/getWAllpHaven.sh"
+wallhavenScript="${HOME}/OneDrive/OneDrive/linux/scripts0/getWallp/new/getWallhaven.sh"
 wallhavenPhp="${HOME}/OneDrive/OneDrive/linux/scripts2/getWallpHaven/db.php"
+wallhavenDir="${HOME}/Pictures/wallhaven"
 workspace=$(cat ${HOME}/.i3/.ws )
 goto=0
 msgId="991050"
@@ -24,9 +25,8 @@ function _x_(){
     if [[ "$ans" == "0" ]] ; then
         echo "deleting it "
         mv "$pic" "${HOME}/Pictures/trashed"
-        pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-        number='^[0-9]+$'
-        if ! [[ "$pic" =~ $number ]] ; then
+        pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+        if [[ -z "$pic" ]] ; then
             echo not a wallhaven wallpaper
             exit
         fi
@@ -35,11 +35,34 @@ function _x_(){
     exit
 }
 
-[[ "$1" == "x" ]] && _x_
+function update_f(){
+    echo reset db...
+    #php -f "$wallhavenPhp" f=reset
+    cd "$wallhavenDir"
+    data="$( find "$PWD" -type f -iname "wallhaven*" 2>/dev/null)"
+    NB=$(echo "$data" | wc -l )
+    nb=0
+    while read -r l ; do
+        id=$( basename "$l" |sed -E 's@wallhaven-(.*)\..*$@\1@g')
+        dir=$( dirname "$l" )
+        dir=${dir##*/}
+        php -f "$wallhavenPhp" f=add "$id" "$dir" "$l"
+        nb=$((nb+1))
+        percentage=$( bc -l <<< "scale=2; $nb * 100 / $NB" )
+        printf '%7d/%d  : %3.2f%%\n' "$nb" "$NB"   "$percentage"
+        echo -en "\e[1A"
+    done <<< "$data"
+    echo "remove deleted from categories and favs"
+    php -f "$wallhavenPhp" f="resetRemoved"
+}
 
+[[ "$1" == "x" ]] && _x_
+[[ "$1" == "updatedb" ]] && update_f
+
+cmdline=$(ps -af | grep -v grep |grep wchanger.sh|grep updatedb )
 is_running=$( pgrep -fc  "$(realpath "$0" )" )
-if (( $is_running >= 2 )) ; then
-    >&2 echo ${0##*/} is running.
+if (( $is_running >= 2 )) && [[ "$cmdline" == "" ]] ; then
+    >&2 echo ${0##*/} is running $is_running proccess
     exit 0
 fi
 
@@ -89,6 +112,7 @@ function f_help(){
     _printhelp "sm|setmode"                    "set mode for current workspace"
     _printhelp "u|unexpire"                    "enable password mode"
     _printhelp "url"                           "wallhaven search url"
+    _printhelp "updatedb"                      "update database"
     _printhelp "+,-"                           "next/prev wallpaper"
     _printhelp "wlist [sdm]"                   "print favsLists names"
     _printhelp "wid"                           "set web id"
@@ -147,37 +171,34 @@ function addFAVLIST(){
 }
 
 function printFav(){
-    if [[ -z "$1" ]]
-        then
-            fid=$(GETFID)
-            if [[ -z "$fid" ]] ; then
-                >&2 echo "no list was chosen"
-                exit
-            fi
-            index=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_$fid" )
-        else
-            msg="select list to print"
-            if (( $notexpired == 1 ))
-                then fid=$( favsList "sm" "$msg" )
-                else fid=$( favsList 'd' "$msg" )
-            fi
+    fid=$(GETFID)
+    if [[ -z "$fid" ]] ; then
+        >&2 echo "no list was chosen"
+        exit
     fi
+    index=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_$fid" )
     [[ -z "$index" ]] && index=1
-    php -f "$wallhavenPhp" f=getfavs "$fid" \
-        | sed 's/^.*://g' \
-        | sed -n "$index,$"p > /tmp/chwlp_feh_dir_list
-    feh --index-info "%u\n" \
-        -x -m -W 1920 -H 1080 \
-        -E 180 -y 180  \
-        -f /tmp/chwlp_feh_dir_list 2> /dev/null
+    if [[ "$1" == "o" ]]
+        then
+            php -f "$wallhavenPhp" f=getfavs "$fid" \
+                | sed 's/^[0-9]*://g' > /tmp/chwlp_feh_dir_list
+            feh -f /tmp/chwlp_feh_dir_list
+        else
+            php -f "$wallhavenPhp" f=getfavs "$fid" \
+                | sed 's/^[0-9]*://g' \
+                | sed -n "$index,$"p > /tmp/chwlp_feh_dir_list
+            feh --index-info "%u\n" \
+                -x -m -W 1920 -H 1080 \
+                -E 180 -y 180  \
+                -f /tmp/chwlp_feh_dir_list 2> /dev/null
+    fi
     exit
 }
 
 # $1 c
 function addFav(){
-    pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-    number='^[0-9]+$'
-    if ! [[ "$pic" =~ $number ]] ; then
+    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$pic" ]] ; then
         echo not a wallhaven wallpaper
         exit
     fi
@@ -215,9 +236,8 @@ function getFIDById(){
 }
 
 function rmFav(){
-    pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-    number='^[0-9]+$'
-    if ! [[ "$pic" =~ $number ]] ; then
+    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$pic" ]] ; then
         echo not a wallhaven wallpaper
         exit
     fi
@@ -296,9 +316,8 @@ function dirHandler(){
 # $1 can be workspace
 function setPauseW(){
     ! [[ -z "$1" ]] && [[ "$1" != "f" ]] && workspace=$1
-    id=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-    number='^[0-9]+$'
-    if ! [[ "$id" =~ $number ]] ; then
+    id=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$id" ]] ; then
         echo not a wallhaven wallpaper
         exit
     fi
@@ -319,9 +338,8 @@ function setPauseW(){
 }
 
 function fix_m(){
-    pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-    number='^[0-9]+$'
-    if ! [[ "$pic" =~ $number ]] ; then
+    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$pic" ]] ; then
         echo not a wallhaven wallpaper
         exit
     fi
@@ -379,8 +397,9 @@ function getOrdered(){
         feh --bg-max   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
     else
         echo "$pic" >> "${HOME}/.i3/wallpaper/errlog"
-        pic=$( echo "$pic" | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-        php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+        pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+        #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+        >&2 echo "error file"
     fi
 }
 
@@ -504,12 +523,14 @@ function getFav(){
     php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_$fid"  "$id"
     echo "$id/$N"
     echo "$id/$N" >| ~/.i3/wallpaper/wlog
+    pic2="${HOME}/.i3/wallpaper/w8.jpg"
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+        feh --bg-max   "$pic" "$pic2"
         else
             echo "$pic" >> "${HOME}/.i3/wallpaper/errlog"
-            pic=$( echo "$pic" | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-            php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+            pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+            #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+            >&2 echo "error file"
     fi
 }
 
@@ -602,13 +623,11 @@ function wsGetwWR(){
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max  "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
         else
-            pic=$( echo "$pic" | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
+            pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
             [[ -z "$pic" ]] && exit
-            php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+            #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+            >&2 echo "error file"
     fi
-    pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-    echo $pic
-    exit
 }
 
 function uncategorised(){
@@ -626,18 +645,23 @@ function printWdir(){
     dir=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_wdir_$notexpired" )
     index=
     index=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_wdir_${notexpired}_$c" )
-    php -f "$wallhavenPhp" f=getdir "$dir" $index 50 $c > /tmp/chwlp_feh_dir_list
-    feh --index-info "%u\n" \
-        -x -m -W 1920 -H 1080 \
-        -E 180 -y 180  \
-        -f /tmp/chwlp_feh_dir_list 2> /dev/null
-            exit
+    if [[ "$1" == "o" ]]
+        then
+            php -f "$wallhavenPhp" f=getdir "$dir" 1 50000 $c > /tmp/chwlp_feh_dir_list
+            feh -f /tmp/chwlp_feh_dir_list 2> /dev/null
+        else
+            php -f "$wallhavenPhp" f=getdir "$dir" $index 50 $c > /tmp/chwlp_feh_dir_list
+            feh --index-info "%u\n" \
+                -x -m -W 1920 -H 1080 \
+                -E 180 -y 180  \
+                -f /tmp/chwlp_feh_dir_list 2> /dev/null
+    fi
+    exit
 }
 
 function printOrd(){
-    pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-    number='^[0-9]+$'
-    if [[ -z "$pic" ]] || ! [[ "$pic" =~ $number ]] ; then
+    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$pic" ]] ; then
         >&2 echo "not a wallhaven list?"
         dunstify -u normal -r "$msgId"  "wallpaper changer" "not a wallhaven list"
         exit
@@ -645,11 +669,17 @@ function printOrd(){
     c=$(get_ordered_c)
     name="ws${workspace}_lastindex_$c"
     id=$(php -f "$wallhavenPhp" f=wh_get "$name" )
-    php -f "$wallhavenPhp" f=getordered $id $c 50 > /tmp/chwlp_feh_dir_list
-    feh --index-info "%u\n" \
-        -x -m -W 1920 -H 1080 \
-        -E 180 -y 180  \
-        -f /tmp/chwlp_feh_dir_list 2> /dev/null
+    if [[ "$1" == "o" ]]
+        then
+            php -f "$wallhavenPhp" f=getordered $id $c 50000 > /tmp/chwlp_feh_dir_list
+            feh -f /tmp/chwlp_feh_dir_list 2> /dev/null
+        else
+            php -f "$wallhavenPhp" f=getordered $id $c 50 > /tmp/chwlp_feh_dir_list
+            feh --index-info "%u\n" \
+                -x -m -W 1920 -H 1080 \
+                -E 180 -y 180  \
+                -f /tmp/chwlp_feh_dir_list 2> /dev/null
+    fi
     exit
 }
 
@@ -660,21 +690,27 @@ function printDir(){
         exit
     fi
     n=$(cat "$dir/.wcount")
-    sed -n "$n,+50"p "$dir/.picslist" > /tmp/chwlp_feh_dir_list
-    feh --index-info "%u\n" \
-        -x -m -W 1920 -H 1080 \
-        -E 180 -y 180  \
-        -f /tmp/chwlp_feh_dir_list
+    if [[ "$1" == "o" ]]
+        then
+            cat "$dir/.picslist" > /tmp/chwlp_feh_dir_list
+            feh -f /tmp/chwlp_feh_dir_list 2> /dev/null
+        else
+            sed -n "$n,+50"p "$dir/.picslist" > /tmp/chwlp_feh_dir_list
+            feh --index-info "%u\n" \
+                -x -m -W 1920 -H 1080 \
+                -E 180 -y 180  \
+                -f /tmp/chwlp_feh_dir_list
+    fi
     exit
 }
 
 function listthem(){
     mode=$(wsgetMode)
     case "$mode" in
-                getFav) printFav  ;;
-        wsGetW|wsGetWP) printDir  ;;
-            getOrdered) printOrd  ;;
-                getDir) printWdir ;;
+                getFav) printFav  "$1" ;;
+        wsGetW|wsGetWP) printDir  "$1" ;;
+            getOrdered) printOrd  "$1" ;;
+                getDir) printWdir "$1" ;;
     esac
     dunstify -u normal -r "$msgId"  "wallpaper changer" "not a printable list"
 }
@@ -712,9 +748,8 @@ function setPauseValue(){
 }
 
 function downloadit(){
-    c="$1"
-    imgID="$2"
-    pic=$( "$wallhavenScript" g $imgID $c )
+    imgID="$1"
+    pic=$( "$wallhavenScript" g "$imgID" )
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max  "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
     fi
@@ -837,7 +872,7 @@ function getDir(){
         exit
     fi
     if (( $notexpired == 1 ))
-        then c=sm
+        then c=smd
         else c=dm
     fi
     N=$( php -f  "$wallhavenPhp" f=getdircount "$dir" "$c" )
@@ -860,14 +895,28 @@ function getDir(){
     php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_wdir_${notexpired}_$c"  "$id"
     echo "$id/$N"
     echo "$id/$N" >| ~/.i3/wallpaper/wlog
+    pic2="${HOME}/.i3/wallpaper/w8.jpg"
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+        feh --bg-max   "$pic" "$pic2"
     else
         echo "$pic" >> "${HOME}/.i3/wallpaper/errlog"
-        pic=$( echo "$pic" | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-        php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+        pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+        #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+        >&2 echo "error file"
     fi
 
+}
+
+function f_keys(){
+    cat ~/.i3/config | grep ^binds | grep wchanger \
+    | sed 's/bindsym//g;
+        s/exec --no-startup-id//g;
+        s@~/.i3/wchanger.sh@@g;
+        s/$mod/WIN/g;
+        s/mod1/ALT/g;
+        s/^[ \t]*//g;
+        ' | awk '{printf("%20s\t%s\n",$1,$2)}'
+    exit
 }
 
 function f_info(){
@@ -893,7 +942,7 @@ function f_info(){
         case "$i" in
             1|2) data=$(modes_f|grep -w $data|cut -d: -f2) ;;
             3|4) data=$(php -f "$wallhavenPhp" f=get $data)
-                 pic=$( echo "$data" | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
+                 pic=$( echo "$data" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
                  data+=$( php -f "$wallhavenPhp" f=getfavlistbyname "$pic" \
                           | sed 's/^.*:/ , /g' |sed '1{$!N;$!N;$!N;$!N;s/\n//g}')
                  ;;
@@ -913,7 +962,7 @@ case "$1" in
             cl)     cl=1 ;;
             cm)     echo "$(wsgetMode)($notexpired)" ;;
            chl)     changeListName "$2" "$3" "$4" ;;
-    d|download)     downloadit "$2" "$3" ;;
+    d|download)     downloadit "$2"  ;;
            dim)
                     pic=$( _pic_ )
                     dim=$( identify -format '%w  %h' "$pic"  )
@@ -928,17 +977,17 @@ case "$1" in
            get)    getData  ;;
         h|help)     f_help ;;
           i|id)
-                    pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
+                    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
                     echo $pic
                     exit ;;
           info)     f_info ;;
+          keys)     f_keys ;;
         l|list)     listthem "$2" ;;
             lm)     modes_f ; exit ;;
              o)     feh "$( _pic_ )" & disown ; exit ;;
             ow)
-                    pic=$( _pic_ | sed -E 's@^.*wallhaven-([0-9]*).*$@\1@g' )
-                    number='^[0-9]+$'
-                    if ! [[ "$id" =~ $number ]] ; then
+                    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+                    if [[ -z "$id" ]] ; then
                         echo not a wallhaven wallpaper
                         exit
                     fi
@@ -954,7 +1003,7 @@ case "$1" in
      u|unexpire)    unexpire ;;
             url)    "$wallhavenScript" url ; exit ;;
           wlist)    wlist_f "$2" ;;
-            wid)    set_web_id "$2" ;;
+            wid)    set_web_id "$2" ; exit ;;
            zoom)
                     pic=$( _pic_ )
                     feh --bg-scale   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
@@ -966,3 +1015,36 @@ wsgetMode x "$1"
 
 sleep 1.2
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if [[ -z "$1" ]]
+#then
+#    fid=$(GETFID)
+#    if [[ -z "$fid" ]] ; then
+#        >&2 echo "no list was chosen"
+#        exit
+#    fi
+#    index=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_$fid" )
+#else
+#    msg="select list to print"
+#    if (( $notexpired == 1 ))
+#    then fid=$( favsList "sm" "$msg" )
+#    else fid=$( favsList 'd' "$msg" )
+#    fi
+#fi

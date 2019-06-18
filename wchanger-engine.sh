@@ -26,6 +26,7 @@ while true ; do
     index=$?
     if (( $currWS == 8 && $ii >= 7 )) \
        || (( $currWS == 10 && $ii >= 7 )) \
+       || (( $currWS == 13 && $ii >= 7 )) \
        || (( $index != 0 )) \
        || (( $ii > 30 )) ; then
         bash ${HOME}/.i3/wchanger.sh >/dev/null
