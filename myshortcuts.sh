@@ -48,13 +48,11 @@ ${voffset +10}\
 ${color lightblue}\
 ' >> "$file"
 cat ~/.i3/config | grep ^binds\
-    | sed 's/bindsym//g;
+    | sed -E 's/bindsym//g;
            s/exec --no-startup-id//g;
-           s/$mod/WIN/g;
+           s/\$mod/WIN/g;
            s/mod1/ALT/g;
-           s@~/OneDrive/OneDrive/linux/scripts0/@@g;
-           s@~/OneDrive/OneDrive/linux/scripts1/@@g;
-           s@~/OneDrive/OneDrive/linux/scripts2/@@g;
+           s@~/(.*)/@@g;
            s/^[ \t]*//g' \
     |awk '{
             printf("%s",$1);

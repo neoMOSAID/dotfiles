@@ -286,7 +286,7 @@ bindsym control+shift+less		    exec --no-startup-id  ~/OneDrive/OneDrive/linux/
 #startup
 #exec  		    --no-startup-id wicd-gtk -t
 #exec		    --no-startup-id google-drive-ocamlfuse ~/gDrive
-#exec		    --no-startup-id firefox
+exec		    --no-startup-id firefox
 #exec		    --no-startup-id pidgin
 exec		    --no-startup-id mpd
 exec            --no-startup-id /usr/lib/geoclue-2.0/demos/agent
@@ -295,8 +295,8 @@ exec		    --no-startup-id nm-applet
 exec		    --no-startup-id udiskie
 exec		    --no-startup-id ~/.i3/start-conky.sh
 exec		    --no-startup-id ~/.i3/prayerTime.sh
-exec		    --no-startup-id ~/.i3/pplayEngine.sh
-exec		    --no-startup-id ~/.i3/wchanger-engine.sh
+exec		    --no-startup-id ~/.i3/pplay/pplayEngine.sh
+exec		    --no-startup-id ~/.i3/wchanger/wchanger-engine.sh
 exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
 exec  	        --no-startup-id redshift
 exec_always	    --no-startup-id numlockx on
@@ -340,19 +340,19 @@ mode "$playFromClipboard" {
  bindsym mod1+p mode "$playFromClipboard"
 
 #wallpaper changer keys
-bindsym mod1+g				        exec --no-startup-id  ~/.i3/wchanger.sh x
-bindsym mod1+h				        exec --no-startup-id  ~/.i3/wchanger.sh dir
-bindsym mod1+j				        exec --no-startup-id  ~/.i3/wchanger.sh setdir
-bindsym mod1+k				        exec --no-startup-id  ~/.i3/wchanger.sh fav
-bindsym mod1+l				        exec --no-startup-id  ~/.i3/wchanger.sh fav
-bindsym mod1+m				        exec --no-startup-id  ~/.i3/wchanger.sh u
-bindsym mod1+comma			    	exec --no-startup-id  ~/.i3/wchanger.sh -
-bindsym mod1+semicolon		    	exec --no-startup-id  ~/.i3/wchanger.sh +
-bindsym mod1+colon		    	    exec --no-startup-id  ~/.i3/wchanger.sh fix
-bindsym mod1+exclam 		    	exec --no-startup-id  ~/.i3/wchanger.sh list
-bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.i3/wchanger.sh af
-bindsym mod1+asterisk		    	exec --no-startup-id  ~/.i3/wchanger.sh rm
-bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.i3/wchanger.sh setmode
-bindsym mod1+dollar		    	    exec --no-startup-id  ~/.i3/wchanger.sh pause
+bindsym mod1+g				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh x
+bindsym mod1+h				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh dir
+bindsym mod1+j				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh setdir
+bindsym mod1+k				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh fav
+bindsym mod1+l				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh fav
+bindsym mod1+m				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh u
+bindsym mod1+comma			    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh -
+bindsym mod1+semicolon		    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh +
+bindsym mod1+colon		    	    exec --no-startup-id  ~/.i3/wchanger/wchanger.sh fix
+bindsym mod1+exclam 		    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh list
+bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.i3/wchanger/wchanger.sh af
+bindsym mod1+asterisk		    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh rm
+bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.i3/wchanger/wchanger.sh setmode
+bindsym mod1+dollar		    	    exec --no-startup-id  ~/.i3/wchanger/wchanger.sh pause
 
 

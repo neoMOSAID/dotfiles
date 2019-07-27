@@ -1,8 +1,10 @@
 #!/bin/bash
 getLyrics="/home/mosaid/OneDrive/OneDrive/www/phpTests/Lyrics2/populate.sh"
 getLocalLyrics="/home/mosaid/OneDrive/OneDrive/linux/scripts0/lyrics.sh"
-pplayScript="/home/mosaid/OneDrive/OneDrive/linux/scripts0/pplay/newplay.sh"
-mpcplay="/home/mosaid/OneDrive/OneDrive/linux/scripts2/mympc.sh"
+pplayScript="${HOME}/.i3/pplay/play.sh"
+mpcplay="${HOME}/.i3/pplay/mympc.sh"
+pplayDir="${HOME}/.i3/pplay"
+m1="${HOME}/.i3/pplay/mpvp.sh"
 
 scriptname=$( basename "$0" )
 is_running=$( pgrep -c "$scriptname" )
@@ -13,6 +15,18 @@ fi
 
 while true ; do
 	sleep 5
+    if (( $(cat "$pplayDir/tr" ) == 1 )) ; then
+        cmd="$(cat "$pplayDir/cmd" )"
+        arg="$(cat "$pplayDir/arg" )"
+        [[ "$cmd" == "pplay" ]] && {
+            bash "$pplayScript" "$arg"
+        }
+        [[ "$cmd" == m1 ]] && {
+            bash "$m1" "$arg"
+        }
+        echo "execute: $cmd ~ $arg"
+        echo "0"    >| "${HOME}/.i3/pplay/tr"
+    fi
     pplay_pid="$(cat "${HOME}/.pplay_pid")"
     if ps -p $pplay_pid > /dev/null ; then
 		nowPlaying=$( bash "$pplayScript" title )

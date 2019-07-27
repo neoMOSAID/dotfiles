@@ -1,13 +1,18 @@
 #!/bin/bash
 
-wallhavenScript="${HOME}/OneDrive/OneDrive/linux/scripts0/getWallp/new/getWallhaven.sh"
-wallhavenPhp="${HOME}/OneDrive/OneDrive/linux/scripts2/getWallpHaven/db.php"
 wallhavenDir="${HOME}/Pictures/wallhaven"
+trash="${HOME}/Pictures/trashed"
+errlog="${HOME}/.wchanger_errlog"
+secondPIC="${HOME}/.i3/wallpaper/w8.jpg"
+
+wallhavenScript="$(dirname "$0")/getWallhaven.sh"
+wallhavenPhp="$(dirname "$0")/db.php"
 workspace=$(cat ${HOME}/.i3/.ws )
+
+notexpired=$(php -f "$wallhavenPhp" f=wh_get "expired" )
 goto=0
 msgId="991050"
 cl=0
-notexpired=$(php -f "$wallhavenPhp" f=wh_get "expired" )
 
 function _pic_(){
     cat ${HOME}/.fehbg \
@@ -24,7 +29,7 @@ function _x_(){
     )
     if [[ "$ans" == "0" ]] ; then
         echo "deleting it "
-        mv "$pic" "${HOME}/Pictures/trashed"
+        mv "$pic" "$trash"
         pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
         if [[ -z "$pic" ]] ; then
             echo not a wallhaven wallpaper
@@ -67,32 +72,33 @@ if (( $is_running >= 2 )) && [[ "$cmdline" == "" ]] ; then
 fi
 
 function _printhelp () {
-    printf '\033[1;31m\t%-23s\033[1;0m\t%s\n' "$1" "$2"
+    printf '\033[1;31m  %-23s\033[1;0m\t%s\n' "$1" "$2"
 }
 
 function f_help(){
     printf '\033[01;33m'
-    echo "
-    multi layred wallpaper changer for i3wm powered by a mysql database,
-    each workspace can have up to 8 states,
-    with two modes ( default and password protected mode)
-    features include (for each workspace ):
-        - a single wallpaper
-        - a directory of wallpapers (local not wallhaven)
-        - a list of favorites wallpapers
-        - wallpaper changing paused/unpaused
-        - ...
+   echo "
+   multi layred wallpaper changer for i3wm powered by a mysql database,
+   each workspace can have up to 8 states,
+   with two modes ( default and password protected mode)
+   features include (for each workspace ):
+       - a single wallpaper
+       - a directory of wallpapers
+       - a list of favorites wallpapers
+       - wallpaper changing paused/unpaused
+       - montage of the next 50 wallpapers
+       - ...
     "
     _printhelp "af|addfav"                     "add current wallpaper to favs"
     _printhelp "al|addlist [id] [name] [c]"    "add list"
     _printhelp "c"                             "current wallpaper path"
     _printhelp "cl"                            "current favsList"
     _printhelp "cm"                            "current mode"
-    _printhelp "chl [id] [name] [c]"           "change list name/category"
+    _printhelp "chl [id] [name] [c]"           "edit list name/category"
     _printhelp "d|download [id] [c]"           "download image by wallhaven id"
     _printhelp "dim"                           "wallpaper dimensions"
     _printhelp "dir"                           "wallpapers directory"
-    _printhelp "fav[sdm]"                      "change favsList"
+    _printhelp "fav"                      "change favsList"
     _printhelp "fix"                           "change current wallpaper's category"
     _printhelp "g [number]"                    "jump to wallpaper"
     _printhelp "get"                           "get"
@@ -205,7 +211,7 @@ function addFav(){
     c=$(php -f "$wallhavenPhp" f=getcategorybyname "$pic" )
     [[ -z "$c" ]] && c='*'
     ! [[ -z "$1" ]] && c="$1"
-    msg="add it to "
+    msg="add wallpaper to "
     fid=$( favsList "$c" "$msg" )
     if [[ -z "$fid" ]] ; then
         >&2 echo "no fid"
@@ -394,9 +400,9 @@ function getOrdered(){
     echo "$id/$N"
     echo "$id/$N" >| ~/.i3/wallpaper/wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+        feh --bg-max   "$pic" "$secondPIC"
     else
-        echo "$pic" >> "${HOME}/.i3/wallpaper/errlog"
+        echo "$pic" >> "$errlog"
         pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
         #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
         >&2 echo "error file"
@@ -478,7 +484,7 @@ function getPauseW(){
         exit
     fi
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+        feh --bg-max   "$pic" "$secondPIC"
     fi
     exit
 }
@@ -523,11 +529,10 @@ function getFav(){
     php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_$fid"  "$id"
     echo "$id/$N"
     echo "$id/$N" >| ~/.i3/wallpaper/wlog
-    pic2="${HOME}/.i3/wallpaper/w8.jpg"
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "$pic2"
+        feh --bg-max   "$pic" "$secondPIC"
         else
-            echo "$pic" >> "${HOME}/.i3/wallpaper/errlog"
+            echo "$pic" >> "$errlog"
             pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
             #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
             >&2 echo "error file"
@@ -621,7 +626,7 @@ function wsGetwWR(){
               pic=$( "$wallhavenScript" "$c" "$squery" )
     fi
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max  "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+        feh --bg-max  "$pic" "$secondPIC"
         else
             pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
             [[ -z "$pic" ]] && exit
@@ -633,7 +638,7 @@ function wsGetwWR(){
 function uncategorised(){
     pic="$(php -f "$wallhavenPhp" f=uncategorised | head -1 )"
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+        feh --bg-max   "$pic" "$secondPIC"
     fi
 }
 
@@ -751,7 +756,7 @@ function downloadit(){
     imgID="$1"
     pic=$( "$wallhavenScript" g "$imgID" )
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max  "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+        feh --bg-max  "$pic" "$secondPIC"
     fi
     exit
 }
@@ -895,11 +900,10 @@ function getDir(){
     php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_wdir_${notexpired}_$c"  "$id"
     echo "$id/$N"
     echo "$id/$N" >| ~/.i3/wallpaper/wlog
-    pic2="${HOME}/.i3/wallpaper/w8.jpg"
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "$pic2"
+        feh --bg-max   "$pic" "$secondPIC"
     else
-        echo "$pic" >> "${HOME}/.i3/wallpaper/errlog"
+        echo "$pic" >> "$wchanger_errlog"
         pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
         #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
         >&2 echo "error file"
@@ -1006,7 +1010,7 @@ case "$1" in
             wid)    set_web_id "$2" ; exit ;;
            zoom)
                     pic=$( _pic_ )
-                    feh --bg-scale   "$pic" "${HOME}/.i3/wallpaper/w8.jpg"
+                    feh --bg-scale   "$pic" "$secondPIC"
                     exit
                     ;;
 esac

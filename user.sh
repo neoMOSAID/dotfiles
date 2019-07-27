@@ -22,7 +22,7 @@ function zenity_progress(){
 function themenu(){
     joey="/home/mosaid/OneDrive/OneDrive/linux/scripts2/joeyThePassion.sh"
     txtreader="/run/media/mosaid/My_Data/Documents/myPrograms/text_reader.exe "
-    pplay='/home/mosaid/OneDrive/OneDrive/linux/scripts0/play.sh'
+    pplay='/home/mosaid/OneDrive/OneDrive/linux/scripts0/pplay/newplay.sh'
 
     mymenu=( onboard display txtReader joey 6Dif POP tor pplay
     screenshot1 screenshot2 shutdown reboot logout  )
@@ -46,7 +46,7 @@ function themenu(){
                         if [[ "$result" == "0" ]] ; then
                             systemctl reboot
                         fi ;;
-        joey)           "$joey" ;;
+        joey)           "$joey" 1 ;;
         txtReader)      nohup wine "$txtreader"  </dev/null >/dev/null 2>&1 & ;;
         onboard)        nohup onboard  </dev/null >/dev/null 2>&1 & ;;
         tor)            bash /home/mosaid/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh ttor ;;
@@ -69,18 +69,18 @@ function themenu(){
 [[ -z "$BLOCK_BUTTON" ]] && [[ "$1" == "menu" ]] && BLOCK_BUTTON=1
 case "$BLOCK_BUTTON" in
     4)
-        ~/.i3/wchanger.sh - >| ~/.i3/wallpaper/wlog
+        ~/.i3/wchanger/wchanger.sh - >| ~/.i3/wallpaper/wlog
         exit
     ;;
     5)
-        ~/.i3/wchanger.sh  >| ~/.i3/wallpaper/wlog
+        ~/.i3/wchanger/wchanger.sh  >| ~/.i3/wallpaper/wlog
         exit
     ;;
     1) themenu
        exit
     ;;
     3)
-        ~/.i3/wchanger.sh  x
+        ~/.i3/wchanger/wchanger.sh  x
         exit
 esac
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+
+wallhavenPhp="$(dirname "$0")/db.php"
+
+
 scriptname=$( basename "$0" )
 is_running=$( pgrep -cf "$scriptname" )
 if (( $is_running > 1 )) ; then
@@ -6,7 +10,6 @@ if (( $is_running > 1 )) ; then
   exit 0
 fi
 
-wallhavenPhp="${HOME}/OneDrive/OneDrive/linux/scripts2/getWallpHaven/db.php"
 
 function getws () {
     lastWS=$(cat ~/.i3/.ws )
@@ -29,7 +32,7 @@ while true ; do
        || (( $currWS == 13 && $ii >= 7 )) \
        || (( $index != 0 )) \
        || (( $ii > 30 )) ; then
-        bash ${HOME}/.i3/wchanger.sh >/dev/null
+        bash "$(dirname "$0" )/wchanger.sh" >/dev/null
         ii=0
     fi
     ii=$((ii+1))

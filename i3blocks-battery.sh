@@ -1,5 +1,41 @@
 #!/bin/bash
 
+msgId="991051"
+
+function light_f(){
+    [[ "$1" == "+" ]] && light -A 2
+    [[ "$1" == "-" ]] && light -U 2
+    LIGHT=$(light)
+    dunstify  -r "$msgId" "LIGHT : $LIGHT"
+}
+
+function redshift_if(){
+    if pgrep redshift >/dev/null
+    then
+        dunstify  -r "$msgId" "redshift is running"
+    else
+        dunstify  -r "$msgId" "redshift is not running"
+    fi
+}
+
+function redshift_f(){
+    if pgrep redshift >/dev/null
+        then
+            dunstify  -r "$msgId" "stopping redshift..."
+            killall redshift
+        else
+            dunstify  -r "$msgId" "starting redshift..."
+            redshift >/dev/null & disown
+    fi
+}
+
+case $BLOCK_BUTTON in
+    1) redshift_f    ;;
+    3) redshift_if    ;;
+    4) light_f +     ;;
+    5) light_f -     ;;
+esac
+
 function alarm() {
   ( speaker-test -t sine -f 1000 )&
   pid=$!
@@ -75,7 +111,11 @@ if [[ "$state" == "discharging" ]] ; then
     ch="-$( timeConvert $timetoEmpty )"
 fi
 
-echo "$ICON$percentage% $ch"
+if pgrep redshift >/dev/null
+    then r="(R)"
+fi
+
+echo "$ICON$percentage%$r $ch"
 echo
 echo "$COLOR"
 

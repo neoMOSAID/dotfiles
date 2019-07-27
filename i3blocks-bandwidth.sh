@@ -1,15 +1,45 @@
 #!/bin/bash
 
-if [[ $BLOCK_BUTTON == 1 ]] ; then
-	WorkSpaceName=$(i3-msg -t get_workspaces | jq -c '.[] |select(.focused)|.name' )
-	i3-msg "workspace $WorkSpaceName;  exec --no-startup-id  rofi -show combi "
-	exit
+is_running=$( pgrep -fc  "$(realpath "$0" )" )
+if (( $is_running >= 2 )) ; then
+    >&2 echo ${0##*/} is running
+    exit 0
 fi
-if [[ $BLOCK_BUTTON == 3 ]] ; then
-    WorkSpaceName=$(i3-msg -t get_workspaces | jq -c '.[] |select(.focused)|.name' )
-    i3-msg "workspace $WorkSpaceName;  exec --no-startup-id  lxterminal "
-    exit
-fi
+WorkSpaceName=$(i3-msg -t get_workspaces | jq -c '.[] |select(.focused)|.name' )
+pplay="${HOME}/.i3/pplay/newplay.sh"
+mpvc=/home/mosaid/OneDrive/OneDrive/linux/scripts0/media-controls.sh
+case $BLOCK_BUTTON in
+    1)
+	    i3-msg "workspace $WorkSpaceName;  exec --no-startup-id  rofi -show combi "
+        sleep 1.2
+	    exit
+        ;;
+    3)
+        i3-msg "workspace $WorkSpaceName;  exec --no-startup-id  lxterminal "
+        sleep 1.2
+        exit
+        ;;
+    4)
+        if [[ -z "$( $pplay pid )" ]]
+            then
+                bash $mpvc n
+            else
+                bash $pplay
+        fi
+        sleep 1.2
+        exit
+        ;;
+    5)
+        if [[ -z "$( $pplay pid )" ]]
+            then
+                bash $mpvc p
+            else
+                bash $pplay
+        fi
+        sleep 1.2
+        exit
+        ;;
+esac
 
 INLABEL="IN "
 OUTLABEL="OUT "

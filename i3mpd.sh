@@ -7,6 +7,7 @@ mp=' mpc --host=127.0.0.1 --port=6601 '
 if ps -p "$( bash "$pplayScript" pid )" > /dev/null
     then
             str="$( bash "$pplayScript" index )|"
+            str+="$( bash "$pplayScript" N ) ~ "
             str+="$( bash "$pplayScript" title )"
             case $BLOCK_BUTTON in
                 1)  ${myPath}/scripts0/media-controls.sh pp ;;
