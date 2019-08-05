@@ -1,6 +1,6 @@
 #!/bin/bash
 
-phpscript="$(dirname "$0")/db.php"
+phpscript="$(dirname $(realpath "$0") )/db.php"
 logfile="${HOME}/.i3/wallpaper/wlog"
 
 scriptname=$( basename "$0" )
@@ -10,7 +10,7 @@ if (( $is_running > 2 )) ; then
     exit 0
 fi
 
-APIKEY="$(cat "$(dirname "$0")/apikey" )"
+APIKEY="$(cat "$(dirname $(realpath "$0") )/apikey" )"
 httpHeader="X-API-Key: $APIKEY"
 
 function init_f(){
@@ -109,9 +109,9 @@ case "$1" in
                         rm tmp 2>/dev/null
                         wget -c -q -O tmp --header="$httpHeader" "https://wallhaven.cc/api/v1/$s1"
                         for (( j=1 ; j<=24; j++ )) ; do
-                            imgURL=$(jq -r ".data[$1].path" tmp)
-                            imgID=$(jq -r ".data[$1].id" tmp)
-                            purity=$(jq -r ".data[$1].purity" tmp)
+                            imgURL=$(jq -r ".data[$j].path" tmp)
+                            imgID=$(jq -r ".data[$j].id" tmp)
+                            purity=$(jq -r ".data[$j].purity" tmp)
                             downloadit_f $j
                         done
                     done

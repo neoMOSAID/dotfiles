@@ -47,9 +47,9 @@ ${color lightblue}\
 
 WIN+Return${goto 230} lxterminal
 WIN+t${goto 230} lxterminal
+ALT+s${goto 230} lxterminal
 WIN+x${goto 230} "rofi -show combi "
 WIN+w${goto 230} mylocate.sh
-ALT+s${goto 230} rofi-icons.sh
 WIN+c${goto 230} "i3-dmenu-desktop --dmenu='dmenu...
 Print${goto 230} screenshot.sh 1
 ALT+control+p${goto 230} screenshot.sh 1
@@ -63,7 +63,7 @@ ALT+b${goto 230} media-controls.sh p
 ALT+v${goto 230} media-controls.sh v
 ALT+c${goto 230} media-controls.sh vv
 ALT+r${goto 230} media-controls.sh r
-ALT+w${goto 230} newplay.sh
+ALT+w${goto 230} play.sh
 ALT+f${goto 230} conkyfont.sh
 ALT+d${goto 230} myBash_functions.sh eglllr
 ALT+t${goto 230} myBash_functions.sh ttor

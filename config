@@ -14,6 +14,7 @@ floating_modifier $mod
 #bindsym    $mod+Return 		exec --no-startup-id i3-sensible-terminal
 bindsym     $mod+Return 		exec --no-startup-id lxterminal
 bindsym     $mod+t 			    exec --no-startup-id lxterminal
+bindsym     mod1+s 	            exec --no-startup-id lxterminal
 
 
 
@@ -26,7 +27,6 @@ bindsym     $mod+t 			    exec --no-startup-id lxterminal
 # start rofi (a program launcher)
 bindsym     $mod+x 	    exec --no-startup-id "rofi -show combi "
 bindsym     $mod+w 	    exec --no-startup-id ~/.i3/mylocate.sh
-bindsym     mod1+s 	    exec --no-startup-id ~/.i3/rofi-icons.sh
 bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b -i -l 49 -fn monospace:20 -p run'"
 
 # change focus
@@ -169,7 +169,7 @@ set $ws13 	       "13"
  workspace $ws9 output  $firstmonitor
 
 assign [class="Transmission-gtk"] $ws1
-assign [class="Firefox"] $ws2
+assign [class="Navigator|firefox"] $ws2
 #assign [class="Clementine|mpv|vlc"] $ws3
 assign [class="libreoffice-calc|libreoffice-writer"] $ws5
 assign [class="Chromium"] $ws5
@@ -276,7 +276,7 @@ bindsym mod1+b				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/script
 bindsym mod1+v				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh v
 bindsym mod1+c				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh vv
 bindsym mod1+r				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh r
-bindsym mod1+w				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/pplay/newplay.sh
+bindsym mod1+w				        exec --no-startup-id  ~/.i3/pplay/play.sh
 bindsym mod1+f				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts1/conkyfont.sh
 bindsym mod1+d				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh eglllr
 bindsym mod1+t				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh ttor

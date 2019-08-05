@@ -1,6 +1,7 @@
 #!/bin/bash
 
 wallhavenPhp="$(dirname "$0")/db.php"
+wallhavenPhp="$(dirname $(realpath "$0") )/db.php"
 
 
 scriptname=$( basename "$0" )

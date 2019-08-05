@@ -1,7 +1,7 @@
 #!/bin/bash
 size=60
 myPath="${HOME}/OneDrive/OneDrive/linux"
-pplayScript="${myPath}/scripts0/pplay/newplay.sh"
+pplayScript="${HOME}/.i3/pplay/play.sh"
 pid="$( bash "$pplayScript" pid )"
 mp=' mpc --host=127.0.0.1 --port=6601 '
 if ps -p "$( bash "$pplayScript" pid )" > /dev/null
@@ -21,7 +21,7 @@ if ps -p "$( bash "$pplayScript" pid )" > /dev/null
                 str=${str::(-zz)}
             fi
     else
-            str=$( ${myPath}/scripts2/mympc.sh c|sed 's/ - / | /')
+            str=$( ${HOME}/.i3/pplay/mympc.sh c|sed 's/ - / | /')
             case $BLOCK_BUTTON in
                 1) echo "$str"
                     WorkSpaceName=$(i3-msg -t get_workspaces | jq -c '.[] |select(.focused)|.name' )

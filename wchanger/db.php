@@ -348,6 +348,19 @@ function getFileByName($name){
     printf("%s\n", $row[0]);
     $mysqli->close();
 }
+
+function getALL(){
+    $mysqli = connectDB();
+    $query =" select path from downloaded ; ";
+    if(! $result = $mysqli->query($query)){
+        printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
+        exit();
+    }
+    while ( $row = $result->fetch_array(MYSQLI_NUM) ) {
+        printf("%s\n", $row[0]);
+    }
+    $mysqli->close();
+}
 function getCategoryByName($name){
     $mysqli = connectDB();
     $query= "select t1.category from categories t1
@@ -834,6 +847,9 @@ if ( isset($_GET["f"]) ) switch ( $_GET["f"] ){
         break;
     case "test1" :
         test1();
+        break;
+    case "getall" :
+        getALL();
         break;
 }
 

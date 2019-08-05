@@ -5,8 +5,8 @@ trash="${HOME}/Pictures/trashed"
 errlog="${HOME}/.wchanger_errlog"
 secondPIC="${HOME}/.i3/wallpaper/w8.jpg"
 
-wallhavenScript="$(dirname "$0")/getWallhaven.sh"
-wallhavenPhp="$(dirname "$0")/db.php"
+wallhavenScript="$(dirname $(realpath "$0") )/getWallhaven.sh"
+wallhavenPhp="$(dirname $(realpath "$0") )/db.php"
 workspace=$(cat ${HOME}/.i3/.ws )
 
 notexpired=$(php -f "$wallhavenPhp" f=wh_get "expired" )
@@ -41,7 +41,7 @@ function _x_(){
 }
 
 function update_f(){
-    echo reset db...
+    echo scanning and adding files...
     #php -f "$wallhavenPhp" f=reset
     cd "$wallhavenDir"
     data="$( find "$PWD" -type f -iname "wallhaven*" 2>/dev/null)"
@@ -57,9 +57,21 @@ function update_f(){
         printf '%7d/%d  : %3.2f%%\n' "$nb" "$NB"   "$percentage"
         echo -en "\e[1A"
     done <<< "$data"
-    echo "remove deleted from categories and favs"
+    echo cleaning up...
+    data=$(
+        php -f "$wallhavenPhp" f=getall "$id" "$dir" "$l"
+    )
+    while read -r l ; do
+        if ! [[ -f "$l" ]] ; then
+            id=$( basename "$l" |sed -E 's@wallhaven-(.*)\..*$@\1@g')
+            php -f "$wallhavenPhp" f="fixcategory" "$id" x
+            echo "$id does not exist. marked"
+        fi
+    done <<< "$data"
+    echo "removing deleted from categories and favs"
     php -f "$wallhavenPhp" f="resetRemoved"
 }
+
 
 [[ "$1" == "x" ]] && _x_
 [[ "$1" == "updatedb" ]] && update_f

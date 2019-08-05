@@ -44,13 +44,19 @@ function f_help(){
 #
 function f_play(){
     pplay_pid=$( f_pid )
+    mode=$( f_mode )
     case "$1" in
         "" )
-            if ! ps -p $pplay_pid > /dev/null 2>&1 ; then
+            if [[ -z "$pplay_pid" ]] ; then
+                if (( $mode == 9 )) ; then
+                    read -s -p " > " pass
+                    echo
+                    result=$( php  -f  "$phpfr1" f=authenticate chwlpf "$pass" )
+                    [[ "$result" == 1 ]] || exit
+                fi
                 m_play "sorted" "" ""
                 return
             fi
-            mode=$( f_mode )
             index=$( f_index  )
             index=$((index+1))
             f_goto "$index"
@@ -60,7 +66,13 @@ function f_play(){
              number='^[0-9]+$'
              if [[ "$1" =~ $number ]]
                 then
-                    if ! ps -p $pplay_pid > /dev/null 2>&1 ; then
+                    if [[ -z "$pplay_pid" ]] ; then
+                        if (( $mode == 9 )) ; then
+                            read -s -p " > " pass
+                            echo
+                            result=$( php  -f  "$phpfr1" f=authenticate chwlpf "$pass" )
+                            [[ "$result" == 1 ]] || exit
+                        fi
                         m_play "sorted" "$1" "$2"
                         return
                     fi
@@ -117,9 +129,8 @@ function m_play() {
         index=$( php -f "$phpPplay" f=getindex list=$mode )
         index=$((index-1))
     fi
-    pplay_pid=$( f_pid )
     kill -9 $(cat "${HOME}/.pplay_pid" ) 2>/dev/null
-    mpv --input-ipc-server=/tmp/pplay_mpvsocket \
+    mpv --input-ipc-server=$mpvsocketfile \
         --playlist="/tmp/pplay_$playlist" --playlist-start=$index $loop \
         --volume=30 > "/tmp/pplay_data" 2>&1  & disown
     pid="$!"
@@ -127,18 +138,27 @@ function m_play() {
 }
 
 function f_title () {
-    pplay_pid=$( f_pid )
-    title=$( wmctrl -lp \
-            | sed -n "/$pplay_pid/p" \
-            | awk '{for(i=5;i<NF-1;i++)  printf("%s ",$i) }'\
-            | sed 's/[ ]*$//g'
-    )
+    cmd='{ "command": ["get_property", "media-title"] }'
+    title=$( echo "$cmd" \
+        | socat - "$mpvsocketfile" 2>/dev/null \
+        | sed 's/[{}"]//g;s/,error:success//;s/data://' )
+    if (( ${#title} <= 1 )) ; then
+        title=$(youtube-dl -j "$(f_url)" 2>/dev/null \
+            |jq -r ".alt_title"
+        )
+    fi
+    #pplay_pid=$( f_pid )
+    #title=$( wmctrl -lp \
+    #        | sed -n "/$pplay_pid/p" \
+    #        | awk '{for(i=5;i<NF-1;i++)  printf("%s ",$i) }'\
+    #        | sed 's/[ ]*$//g'
+    #)
     echo "$title"
 }
 
 function f_index(){
     pplay_pid=$( f_pid )
-    if ! ps -p $pplay_pid > /dev/null ; then
+    if [[ -z "$pplay_pid" ]] ; then
         echo 0
         return
     fi
@@ -181,8 +201,16 @@ function f_saveIndex(){
 }
 
 function f_list(){
-    pplay_pid=$( f_pid )
     mode=$(f_mode)
+    pplay_pid=$(f_pid)
+    if [[ -z "$pplay_pid" ]] ; then
+        if (( $mode == 9 )) ; then
+            read -s -p " > " pass
+            echo
+            result=$( php  -f  "$phpfr1" f=authenticate chwlpf "$pass" )
+            [[ "$result" == 1 ]] || exit
+        fi
+    fi
     index=$(f_index)
     data=$( php -f "$phpPplay" f=gettitles "list=$mode" "index=$index" )
     nb=$(echo "$data" | jq length )
@@ -325,7 +353,7 @@ function f_load(){
                     done > "/tmp/pplay_$playlist"
     echo "$playlist" > /tmp/pplay_list
     kill -9 $(cat "${HOME}/.pplay_pid" ) 2>/dev/null
-    mpv --input-ipc-server=/tmp/pplay_mpvsocket \
+    mpv --input-ipc-server=$mpvsocketfile \
         --playlist="/tmp/pplay_$playlist" \
         --volume=30 > "/tmp/pplay_data" 2>&1  & disown
     pid="$!"
@@ -378,7 +406,7 @@ function f_find(){
 
 function f_stats(){
     pplay_pid=$( f_pid )
-    if ! ps -p "$pplay_pid" > /dev/null ; then
+    if [[ -z "$pplay_pid" ]] ; then
         echo not playing anything
         return
     fi
