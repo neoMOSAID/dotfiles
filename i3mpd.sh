@@ -2,13 +2,16 @@
 size=60
 myPath="${HOME}/OneDrive/OneDrive/linux"
 pplayScript="${HOME}/.i3/pplay/play.sh"
-pid="$( bash "$pplayScript" pid )"
+pid="$(  "$pplayScript" pid )"
 mp=' mpc --host=127.0.0.1 --port=6601 '
-if ps -p "$( bash "$pplayScript" pid )" > /dev/null
+if ! [[ -z "$pid" ]]
     then
-            str="$( bash "$pplayScript" index )|"
-            str+="$( bash "$pplayScript" N ) ~ "
-            str+="$( bash "$pplayScript" title )"
+            str="$(  "$pplayScript" index )|"
+            str+="$(  "$pplayScript" N ) ~ "
+            if (( $( $pplayScript m ) == 9 ))
+                then str+="##############"
+                else str+="$( bash "$pplayScript" title )"
+            fi
             case $BLOCK_BUTTON in
                 1)  ${myPath}/scripts0/media-controls.sh pp ;;
                 3)  ${myPath}/scripts0/media-controls.sh n ;;

@@ -49,6 +49,7 @@ function f_play(){
         "" )
             if [[ -z "$pplay_pid" ]] ; then
                 if (( $mode == 9 )) ; then
+                    [[ -t 1 ]] || exit
                     read -s -p " > " pass
                     echo
                     result=$( php  -f  "$phpfr1" f=authenticate chwlpf "$pass" )
@@ -127,8 +128,8 @@ function m_play() {
     echo "$playlist" > /tmp/pplay_list
     if [[ -z "$index" ]] ; then
         index=$( php -f "$phpPplay" f=getindex list=$mode )
-        index=$((index-1))
     fi
+    index=$((index-1))
     kill -9 $(cat "${HOME}/.pplay_pid" ) 2>/dev/null
     mpv --input-ipc-server=$mpvsocketfile \
         --playlist="/tmp/pplay_$playlist" --playlist-start=$index $loop \

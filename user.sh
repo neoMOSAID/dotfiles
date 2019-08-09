@@ -22,10 +22,10 @@ function zenity_progress(){
 function themenu(){
     joey="/home/mosaid/OneDrive/OneDrive/linux/scripts2/joeyThePassion.sh"
     txtreader="/run/media/mosaid/My_Data/Documents/myPrograms/text_reader.exe "
-    pplay='/home/mosaid/OneDrive/OneDrive/linux/scripts0/pplay/newplay.sh'
+    pplay='/home/mosaid/.i3/pplay/play.sh'
 
     mymenu=( onboard display txtReader joey 6Dif POP tor pplay
-    screenshot1 screenshot2 shutdown reboot logout  )
+        screenshot1 screenshot2 'screenshot (5s delay)' shutdown reboot logout  )
     ch=$( for (( ii=0 ; ii<${#mymenu[@]} ; ii++ )) ; do
         printf "${mymenu[$ii]}\n"
         done |rofi -dmenu -p menu -width -30
@@ -53,6 +53,7 @@ function themenu(){
         pplay)          bash "$pplay" ;;
         screenshot1)    sleep 0.200 ; bash ~/.i3/screenshot.sh 1 >/dev/null ;;
         screenshot2)    sleep 0.200 ; bash ~/.i3/screenshot.sh 2 >/dev/null ;;
+        'screenshot (5s delay)') sleep 5.200 ; bash ~/.i3/screenshot.sh 2 >/dev/null ;;
         display)        bash ~/.i3/display.sh default >/dev/null ;;
         POP)
             cd "/home/mosaid/Documents/Prince Of Persia - The Warrior Within"
