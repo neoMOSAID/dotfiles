@@ -1,7 +1,7 @@
 #!/bin/bash
 
 phpscript="$(dirname $(realpath "$0") )/db.php"
-logfile="${HOME}/.i3/wallpaper/wlog"
+logfile="/tmp/wchanger_wlog"
 
 scriptname=$( basename "$0" )
 is_running=$( pgrep  -f -c "$scriptname" )

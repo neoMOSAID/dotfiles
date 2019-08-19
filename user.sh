@@ -70,11 +70,11 @@ function themenu(){
 [[ -z "$BLOCK_BUTTON" ]] && [[ "$1" == "menu" ]] && BLOCK_BUTTON=1
 case "$BLOCK_BUTTON" in
     4)
-        ~/.i3/wchanger/wchanger.sh - >| ~/.i3/wallpaper/wlog
+        ~/.i3/wchanger/wchanger.sh - > /tmp/wchanger_wlog
         exit
     ;;
     5)
-        ~/.i3/wchanger/wchanger.sh  >| ~/.i3/wallpaper/wlog
+        ~/.i3/wchanger/wchanger.sh   > /tmp/wchanger_wlog
         exit
     ;;
     1) themenu

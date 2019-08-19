@@ -11,8 +11,8 @@ arg="$2"
 "
 exit
 }
-echo "$cmd" >| "${HOME}/.i3/pplay/cmd"
-echo "$arg" >| "${HOME}/.i3/pplay/arg"
-echo "1"    >| "${HOME}/.i3/pplay/tr"
+touch /tmp/cmd_trigger_tr
+echo "$cmd" > /tmp/cmd_trigger_cmd
+echo "$arg" > /tmp/cmd_trigger_arg
 
 

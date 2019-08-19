@@ -1,16 +1,15 @@
 #!/bin/bash
-lxterminal -e "locate /home /run/media |fzf >| ~/.mylocateData"
+lxterminal -e "locate /home /run/media |fzf > /tmp/mylocate_Data"
 
 sleep 0.4
 while [[ "$(pidof fzf)" != "" ]] ; do
     sleep 0.4
 done
-file="$(cat ~/.mylocateData)"
+file="$(cat /tmp/mylocate_Data )"
+echo $file
 if [[ -z "$file" ]] ; then exit ; fi
 mimetype=$(file  --dereference --brief --mime-type  "$file" )
 echo "$mimetype"
-echo "$mimetype" >> ~/.mylocateDataLog
-echo "$file" >> ~/.mylocateDataLog
 case "$mimetype" in
     inode/directory)            lxterminal -e bicon.bin ranger "$file" ;;
     image/gif)                  viewnior "$file" & disown ;;

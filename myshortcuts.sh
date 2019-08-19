@@ -34,7 +34,7 @@ own_window_argb_value 0
 own_window_colour 000000
 minimum_size 500 0
 TEXT" >| "${file}"
-echo '${if_match "${exec cat /home/mosaid/.i3/.ws}" == "1" }\' >> "$file"
+echo '${if_match "${exec cat /tmp/my_i3_ws}" == "1" }\' >> "$file"
 echo '${if_match "${exec  /home/mosaid/.i3/is_workspace_empty.sh}" == "0" }\' >> "$file"
 echo '\
 ${color green}\

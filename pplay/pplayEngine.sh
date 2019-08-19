@@ -3,8 +3,6 @@ getLyrics="/home/mosaid/OneDrive/OneDrive/www/phpTests/Lyrics2/populate.sh"
 getLocalLyrics="/home/mosaid/OneDrive/OneDrive/linux/scripts0/lyrics.sh"
 pplayScript="${HOME}/.i3/pplay/play.sh"
 mpcplay="${HOME}/.i3/pplay/mympc.sh"
-pplayDir="${HOME}/.i3/pplay"
-m1="${HOME}/.i3/pplay/mpvp.sh"
 
 scriptname=$( basename "$0" )
 is_running=$( pgrep -c "$scriptname" )
@@ -15,27 +13,15 @@ fi
 
 while true ; do
 	sleep 5
-    if (( $(cat "$pplayDir/tr" ) == 1 )) ; then
-        cmd="$(cat "$pplayDir/cmd" )"
-        arg="$(cat "$pplayDir/arg" )"
-        [[ "$cmd" == "pplay" ]] && {
-            bash "$pplayScript" "$arg"
-        }
-        [[ "$cmd" == m1 ]] && {
-            bash "$m1" "$arg"
-        }
-        echo "execute: $cmd ~ $arg"
-        echo "0"    >| "${HOME}/.i3/pplay/tr"
-    fi
-    pplay_pid="$(cat "${HOME}/.pplay_pid")"
-    if ps -p $pplay_pid > /dev/null ; then
+    pplay_pid="$( "$pplayScript" pid )"
+    if [[ ! -z $pplay_pid ]] ; then
 		nowPlaying=$( bash "$pplayScript" title )
         if `echo "$nowPlaying" | grep 'watch?v=' >/dev/null`
             then continue
         fi
-        lastPlayed=$( cat "${HOME}/.pplay_engine_last" )
+        lastPlayed=$( cat /tmp/pplay_engine_last )
 		if [[ "$nowPlaying" != "$lastPlayed" ]] ; then
-            echo "$nowPlaying" >| /home/mosaid/.pplay_engine_last
+            echo "$nowPlaying" > /tmp/pplay_engine_last
             bash "$pplayScript" saveTitle
             bash "$pplayScript" saveIndex
             code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
@@ -51,11 +37,10 @@ while true ; do
 		continue
 	fi
 	if ! mpc --host=127.0.0.1 --port=6601 |grep -F "[paused]" >/dev/null ; then
-		lastPlayed=$(cat /home/mosaid/.pplayLastPlayed )
+		lastPlayed=$(cat /tmp/pplay_mpd_LastPlayed )
 		nowPlaying=$( bash "$mpcplay" c |cut -d# -f2 )
 		if [[ "$nowPlaying" != "$lastPlayed" ]] ; then
-			echo "$nowPlaying" >| /home/mosaid/.pplayLastPlayed
-			bash "$getLyrics"
+			echo "$nowPlaying" > /tmp/pplay_mpd_LastPlayed
             code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
             if (( code == 0 ))
                 then bash "$getLocalLyrics" 1

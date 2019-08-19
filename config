@@ -81,6 +81,7 @@ bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b
 
  # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
+set $ws0	       "0"
 set $ws1	       "1: root"
 set $ws2	       "2: net"
 set $ws3	       "3: Media"
@@ -96,6 +97,7 @@ set $ws12 	       "12"
 set $ws13 	       "13"
 
 # switch to workspace
+ bindsym $mod+twosuperior            workspace $ws0
  bindsym $mod+ampersand       		 workspace $ws1
  bindsym $mod+eacute 		         workspace $ws2
  bindsym $mod+quotedbl 		         workspace $ws3
@@ -108,7 +110,7 @@ set $ws13 	       "13"
  bindsym $mod+agrave 		         workspace $ws10
  bindsym $mod+parenright 		     workspace $ws11
  bindsym $mod+equal       		     workspace $ws12
- bindsym control+$mod+twosuperior       	 workspace $ws13
+ bindsym control+$mod+twosuperior    workspace $ws13
 
 # switch to workspace
  bindsym control+ampersand       		 workspace "14"
@@ -286,7 +288,7 @@ bindsym control+shift+less		    exec --no-startup-id  ~/OneDrive/OneDrive/linux/
 #startup
 #exec  		    --no-startup-id wicd-gtk -t
 #exec		    --no-startup-id google-drive-ocamlfuse ~/gDrive
-exec		    --no-startup-id firefox
+#exec		    --no-startup-id firefox
 #exec		    --no-startup-id pidgin
 exec		    --no-startup-id mpd
 exec            --no-startup-id /usr/lib/geoclue-2.0/demos/agent
@@ -296,8 +298,9 @@ exec		    --no-startup-id udiskie
 exec		    --no-startup-id ~/.i3/start-conky.sh
 exec		    --no-startup-id ~/.i3/prayerTime.sh
 exec		    --no-startup-id ~/.i3/pplay/pplayEngine.sh
+exec		    --no-startup-id ~/.i3/trigger/mycommands.sh
 exec		    --no-startup-id ~/.i3/wchanger/wchanger-engine.sh
-exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
+#exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
 exec  	        --no-startup-id redshift
 exec_always	    --no-startup-id numlockx on
 exec_always	    --no-startup-id compton --config ~/.i3/compton.conf

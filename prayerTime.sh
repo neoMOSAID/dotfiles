@@ -16,23 +16,28 @@ function CURL (){
 
 CURL 'https://www.islamicfinder.org/' \
 |sed -n -e '/Upcoming Prayer/{N;N;N;N;N;N;N;s/<[^>]*>//g;s/\s\s*/ /g;p}' \
->| "${HOME}/.nextPrayer"
+>| "/tmp/nextPrayerTime"
 
 if ! [[ -z "$1" ]] ; then exit ; fi
 
 while true ; do
     sleep 1
-    nextPrayerName="$(cat "${HOME}/.nextPrayer" | cut -d' ' -f4 )"
-    nextPrayerTime="$(cat "${HOME}/.nextPrayer" | cut -d' ' -f5 )"
+    nextPrayerName="$(cat "/tmp/nextPrayerTime" | cut -d' ' -f4 )"
+    nextPrayerTime="$(cat "/tmp/nextPrayerTime" | cut -d' ' -f5 )"
     h=$(echo $nextPrayerTime|cut -d: -f1 )
     m=$(echo $nextPrayerTime|cut -d: -f2 )
     s=$(echo $nextPrayerTime|cut -d: -f3 )
     if [[ -z "$h" ]] || [[ -z "$m" ]] || [[ -z "$h" ]] ; then
         code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
-        (( code == 0 )) && sleep 30 ; continue
+        (( code == 0 )) && {
+            >&2 echo "PrayerTime: waiting for network..."
+            sleep 30
+            continue
+        }
+        >&2 echo "PrayerTime: getting data..."
         CURL 'https://www.islamicfinder.org/' \
         |sed -n -e '/Upcoming Prayer/{N;N;N;N;N;N;N;s/<[^>]*>//g;s/\s\s*/ /g;p}' \
-        >| "${HOME}/.nextPrayer"
+        >| "/tmp/nextPrayerTime"
         continue
     fi
     if (( $s > 0 )) ;  then
@@ -48,8 +53,8 @@ while true ; do
             dunstify -u critical -r "$msgId" "Prayer Time " "its time for Salat Al $nextPrayerName"
             CURL 'https://www.islamicfinder.org/' \
             |sed -n -e '/Upcoming Prayer/{N;N;N;N;N;N;N;s/<[^>]*>//g;s/\s\s*/ /g;p}' \
-            >| "${HOME}/.nextPrayer"
+            >| "/tmp/nextPrayerTime"
             continue
     fi
-    echo " Upcoming Prayer $nextPrayerName $h:$m:$s" >| "${HOME}/.nextPrayer"
+    echo " Upcoming Prayer $nextPrayerName $h:$m:$s" >| "/tmp/nextPrayerTime"
 done

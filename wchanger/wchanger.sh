@@ -7,7 +7,7 @@ secondPIC="${HOME}/.i3/wallpaper/w8.jpg"
 
 wallhavenScript="$(dirname $(realpath "$0") )/getWallhaven.sh"
 wallhavenPhp="$(dirname $(realpath "$0") )/db.php"
-workspace=$(cat ${HOME}/.i3/.ws )
+workspace=$(cat /tmp/my_i3_ws )
 
 notexpired=$(php -f "$wallhavenPhp" f=wh_get "expired" )
 goto=0
@@ -410,7 +410,7 @@ function getOrdered(){
         exit
     fi
     echo "$id/$N"
-    echo "$id/$N" >| ~/.i3/wallpaper/wlog
+    echo "$id/$N" >| /tmp/wchanger_wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max   "$pic" "$secondPIC"
     else
@@ -476,7 +476,7 @@ function getDwall () {
         fi
     fi
     echo "$n/$L"
-    echo "$n/$L" >| ~/.i3/wallpaper/wlog
+    echo "$n/$L" >| /tmp/wchanger_wlog
 	echo "$n" >| "$1/.wcount"
 }
 
@@ -540,7 +540,7 @@ function getFav(){
     pic="$(php -f "$wallhavenPhp" f=getfav $fid $id )"
     php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_$fid"  "$id"
     echo "$id/$N"
-    echo "$id/$N" >| ~/.i3/wallpaper/wlog
+    echo "$id/$N" >| /tmp/wchanger_wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max   "$pic" "$secondPIC"
         else
@@ -811,7 +811,7 @@ function wsSetMode(){
         >&2 echo "empty choice"
         exit
     fi
-    if  (( $notexpired == 0 )) && (( $workspace <= 7 ))
+    if  (( $notexpired == 0 )) && (( $workspace > 0 && $workspace <=7 ))
     then
         if [[ "$(pass_f)" == "0" ]] ; then
             dunstify -u normal -r "$msgId" "wallpaper changer" "not permitted"
@@ -911,7 +911,7 @@ function getDir(){
     pic="$(php -f "$wallhavenPhp" f=getdir "$dir" "$id" 1 "$c" )"
     php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_wdir_${notexpired}_$c"  "$id"
     echo "$id/$N"
-    echo "$id/$N" >| ~/.i3/wallpaper/wlog
+    echo "$id/$N" >| /tmp/wchanger_wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max   "$pic" "$secondPIC"
     else

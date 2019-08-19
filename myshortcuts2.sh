@@ -36,7 +36,7 @@ own_window_colour EF2929
 minimum_size 500 0
 TEXT
 ' >| "${file}"
-#echo '${if_match "${exec cat /home/mosaid/.i3/.ws}" == "1" }\' >> "$file"
+#echo '${if_match "${exec cat /tmp/my_i3_ws}" == "1" }\' >> "$file"
 # echo '${if_match "${exec  /home/mosaid/.i3/is_workspace_empty.sh}" == "0" }\' >> "$file"
 screenfetch -N >> "$file"
 #echo '${endif}' >> "$file"

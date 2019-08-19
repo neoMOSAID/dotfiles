@@ -130,12 +130,15 @@ function m_play() {
         index=$( php -f "$phpPplay" f=getindex list=$mode )
     fi
     index=$((index-1))
-    kill -9 $(cat "${HOME}/.pplay_pid" ) 2>/dev/null
+    [[ -f /tmp/pplay_pid ]] && {
+        kill -9 $(cat "/tmp/pplay_pid" ) 2>/dev/null
+    }
     mpv --input-ipc-server=$mpvsocketfile \
+        --quiet \
         --playlist="/tmp/pplay_$playlist" --playlist-start=$index $loop \
         --volume=30 > "/tmp/pplay_data" 2>&1  & disown
     pid="$!"
-    echo "$pid" >| "${HOME}/.pplay_pid"
+    echo "$pid" >| "/tmp/pplay_pid"
 }
 
 function f_title () {
@@ -227,8 +230,9 @@ function f_list(){
 }
 
 function f_kill(){
-    kill -9 $(cat "${HOME}/.pplay_pid" ) 2>/dev/null
-    #echo "" >| "${HOME}/.pplay_pid"
+    [[ -f /tmp/pplay_pid ]] && {
+        kill -9 $(cat "/tmp/pplay_pid" ) 2>/dev/null
+    }
 }
 
 function f_playlists(){
@@ -316,7 +320,8 @@ function f_chmode(){
 }
 
 function f_pid(){
-    pid=$(cat "${HOME}/.pplay_pid")
+    ! [[ -f /tmp/pplay_pid ]] && return
+    pid=$(cat "/tmp/pplay_pid")
     if pgrep mpv | grep -w $pid >/dev/null
         then echo $pid
     fi
@@ -353,12 +358,15 @@ function f_load(){
                         echo
                     done > "/tmp/pplay_$playlist"
     echo "$playlist" > /tmp/pplay_list
-    kill -9 $(cat "${HOME}/.pplay_pid" ) 2>/dev/null
+    [[ -f /tmp/pplay_pid ]] && {
+        kill -9 $(cat "/tmp/pplay_pid" ) 2>/dev/null
+    }
     mpv --input-ipc-server=$mpvsocketfile \
+        --quiet \
         --playlist="/tmp/pplay_$playlist" \
         --volume=30 > "/tmp/pplay_data" 2>&1  & disown
     pid="$!"
-    echo "$pid" >| "${HOME}/.pplay_pid"
+    echo "$pid" >| "/tmp/pplay_pid"
 }
 
 function f_remove(){

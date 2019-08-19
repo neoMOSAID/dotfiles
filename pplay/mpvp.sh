@@ -1,5 +1,5 @@
 #!/bin/bash
-mpv_pid="/home/mosaid/.mpv_m1_pid"
+mpv_pid="/tmp/mpv_m1_pid"
 if [[ "$1" == k ]] ; then
     pid=$(cat "$mpv_pid" )
     if ! [[ -z "$pid" ]] ; then
@@ -12,9 +12,10 @@ if [[ "$1" == k ]] ; then
 fi
 
 function f_pid(){
+    ! [[ -f /tmp/mpv_m1_pid ]] && return
     pid=$(cat "$mpv_pid" )
     if pgrep mpv | grep -w "$pid" >/dev/null
-    then echo $pid
+        then echo $pid
     fi
 }
 

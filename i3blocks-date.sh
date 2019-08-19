@@ -1,7 +1,7 @@
 #!/bin/bash
 date '+%a %d %h %Y %H:%M'
 
-wsi=$(cat ~/.i3/.ws)
+wsi=$(cat /tmp/my_i3_ws)
 wsn=$( bash /home/mosaid/.i3/workspaces.sh $wsi )
 case "$BLOCK_BUTTON" in
     1)  n=$(echo $((`date '+%d'`))|wc -c )

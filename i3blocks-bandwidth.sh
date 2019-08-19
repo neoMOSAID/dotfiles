@@ -2,7 +2,6 @@
 
 is_running=$( pgrep -fc  "$(realpath "$0" )" )
 if (( $is_running >= 2 )) ; then
-    >&2 echo ${0##*/} is running
     exit 0
 fi
 WorkSpaceName=$(i3-msg -t get_workspaces | jq -c '.[] |select(.focused)|.name' )

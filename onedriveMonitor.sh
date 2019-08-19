@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #echo "" >| "${HOME}/.onedriveMonitor"
 while true ; do
     sleep 30

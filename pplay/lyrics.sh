@@ -13,7 +13,7 @@ if (( $is_running >= 2 )) ; then
     exit 0
 fi
 
-lastLyrics="/home/mosaid/.lastLyrics"
+lastLyrics="/tmp/lastLyrics"
 glllrenable=$(cat /home/mosaid/.gllrenable)
 if (( "$glllrenable" == 0 )) ; then
     echo "" >| "$lastLyrics"
@@ -51,7 +51,11 @@ if (( ${#str0} < 1 ))
 			echo "not playing anything on : $var !"
 			exit
 fi
-str=$(echo "$str0" | sed 's/[^a-zA-Z0-9]/ /g')
+str=$(echo "$str0" | sed '
+                            :a;N;$!ba;s/\n/ /g;
+                            s/[^a-zA-Z0-9]/ /g;
+                            s/\n//g
+                        ')
 #aaa=$(echo "$1"|awk 'END{print index($0,"a")}')
 #if (($aaa > 0))
 #	then
@@ -59,7 +63,6 @@ str=$(echo "$str0" | sed 's/[^a-zA-Z0-9]/ /g')
 #	else
 #		PLAYING="\033[01;36mplaying    : \033[01;00m"
 #fi
-#printf "$PLAYING$str0\n"
 aaa=$(echo "$1"|awk 'END{print index($0,"p")}')
 if (($aaa > 0))
 	then
@@ -82,7 +85,7 @@ f=$(echo "$files" | awk '{ print NF,$0 }' IGNORECASE=1 FS="$patterns" | sort -nr
 f=$(echo "$f" |head -9 )
 nbrOFmatches=$( echo "$f" | awk ' NR==1 { print $1 }')
 if (( $nbrOFmatches <= 1)) ; then
-		echo "no lyrics found."
+		>&2 echo "no lyrics found."
 		exit
 fi
 bmatch=$(echo "$f"|awk 'NR==1 {for(i=2;i<=NF;i++) printf $i" "}')
@@ -115,4 +118,4 @@ if (($aaa > 0))
 		exit
 fi
 #echo "$rr"|more
-echo "$rr" >| "/home/mosaid/.lastLyrics"
+echo "$rr" >| "/tmp/lastLyrics"
