@@ -81,7 +81,6 @@ bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b
 
  # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
-set $ws0	       "0"
 set $ws1	       "1: root"
 set $ws2	       "2: net"
 set $ws3	       "3: Media"
@@ -97,7 +96,6 @@ set $ws12 	       "12"
 set $ws13 	       "13"
 
 # switch to workspace
- bindsym $mod+twosuperior            workspace $ws0
  bindsym $mod+ampersand       		 workspace $ws1
  bindsym $mod+eacute 		         workspace $ws2
  bindsym $mod+quotedbl 		         workspace $ws3
@@ -110,22 +108,22 @@ set $ws13 	       "13"
  bindsym $mod+agrave 		         workspace $ws10
  bindsym $mod+parenright 		     workspace $ws11
  bindsym $mod+equal       		     workspace $ws12
- bindsym control+$mod+twosuperior    workspace $ws13
+ bindsym $mod+control+twosuperior    workspace $ws13
 
 # switch to workspace
- bindsym control+ampersand       		 workspace "14"
- bindsym control+eacute 		         workspace "15"
- bindsym control+quotedbl 		         workspace "16"
- bindsym control+apostrophe 	         workspace "17"
- bindsym control+parenleft 		         workspace "18"
- bindsym control+minus 		             workspace "19"
- bindsym control+egrave 		         workspace "20"
- bindsym control+underscore 	         workspace "21"
- bindsym control+ccedilla 		         workspace "22"
- bindsym control+agrave 		         workspace "23"
- bindsym control+parenright 		     workspace "24"
- bindsym control+equal       		     workspace "25"
- bindsym $mod+control+mod1+colon         workspace "xx"
+ bindsym $mod+control+ampersand       		 workspace "14"
+ bindsym $mod+control+eacute 		         workspace "15"
+ bindsym $mod+control+quotedbl 		         workspace "16"
+ bindsym $mod+control+apostrophe 	         workspace "17"
+ bindsym $mod+control+parenleft 		     workspace "18"
+ bindsym $mod+control+minus 		         workspace "19"
+ bindsym $mod+control+egrave 		         workspace "20"
+ bindsym $mod+control+underscore 	         workspace "21"
+ bindsym $mod+control+ccedilla 		         workspace "22"
+ bindsym $mod+control+agrave 		         workspace "23"
+ bindsym $mod+control+parenright 		     workspace "24"
+ bindsym $mod+control+equal       		     workspace "25"
+ bindsym $mod+control+mod1+colon             workspace "0"
 
  # move focused container to workspace
  bindsym $mod+Shift+ampersand      	move container to workspace $ws1
@@ -300,7 +298,7 @@ exec		    --no-startup-id ~/.i3/prayerTime.sh
 exec		    --no-startup-id ~/.i3/pplay/pplayEngine.sh
 exec		    --no-startup-id ~/.i3/trigger/mycommands.sh
 exec		    --no-startup-id ~/.i3/wchanger/wchanger-engine.sh
-#exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
+exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
 exec  	        --no-startup-id redshift
 exec_always	    --no-startup-id numlockx on
 exec_always	    --no-startup-id compton --config ~/.i3/compton.conf

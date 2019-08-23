@@ -31,13 +31,15 @@ uppercase no
 override_utf8_locale yes
 
 TEXT
+${if_match "${exec cat ~/.gllrenable}" == "1" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "8" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "10" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "13" }\
 ${if_match "${exec /home/mosaid/.i3/conky/conky-helper.sh}" == "playing" }\
 #${exec /home/mosaid/OneDrive/OneDrive/linux/scripts3/xcolor.sh }
 ${execi 3 cat "/tmp/lastLyrics" |head -n 36}\
-${endif}\
+${endif}
+${endif}
 ${endif}
 ${endif}
 ${endif}

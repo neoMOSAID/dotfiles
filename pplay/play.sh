@@ -2,6 +2,9 @@
 phpPplay="${HOME}/OneDrive/OneDrive/www/phpTests/pplay/pplay.php"
 phpfr1="${HOME}/OneDrive/OneDrive/www/phpTests/fr1/fr1.php"
 mpvsocketfile=/tmp/pplay_mpvsocket
+pidfile=/tmp/pplay_pid
+datafile=/tmp/pplay_data
+playlistFile=/tmp/pplay_mpv_playlistFile
 
 function _printhelp () {
     printf '\t%-15s\t%s\n' "$1" "$2"
@@ -122,23 +125,21 @@ function m_play() {
     index="$2"
     loop="$3"
     mode=$(f_mode)
-    playlist="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)"
     php -f "$phpPplay" f=getplaylist "id=$mode" "order=$order" \
-    | jq '.files[]'|sed 's/"//g' > "/tmp/pplay_$playlist"
-    echo "$playlist" > /tmp/pplay_list
+    | jq '.files[]'|sed 's/"//g' > "$playlistFile"
     if [[ -z "$index" ]] ; then
         index=$( php -f "$phpPplay" f=getindex list=$mode )
     fi
     index=$((index-1))
-    [[ -f /tmp/pplay_pid ]] && {
-        kill -9 $(cat "/tmp/pplay_pid" ) 2>/dev/null
+    [[ -f "$pidfile" ]] && {
+        kill -9 $(cat "$pidfile" ) 2>/dev/null
     }
     mpv --input-ipc-server=$mpvsocketfile \
         --quiet \
-        --playlist="/tmp/pplay_$playlist" --playlist-start=$index $loop \
-        --volume=30 > "/tmp/pplay_data" 2>&1  & disown
+        --playlist="$playlistFile" --playlist-start=$index $loop \
+        --volume=30 > "$datafile" 2>&1  & disown
     pid="$!"
-    echo "$pid" >| "/tmp/pplay_pid"
+    echo "$pid" >| "$pidfile"
 }
 
 function f_title () {
@@ -167,8 +168,7 @@ function f_index(){
         return
     fi
     url=$(f_url)
-    playlist="/tmp/pplay_$(cat /tmp/pplay_list)"
-    index=$(cat "$playlist" \
+    index=$(cat "$playlistFile" \
             | grep -Fn "$url" 2>/dev/null \
             | head -1 |cut -f1 -d:
     )
@@ -182,7 +182,7 @@ function f_playlistName(){
 }
 
 function f_url(){
-    cat "/tmp/pplay_data" \
+    cat "$datafile" \
     |sed -n '/cplayer: Playing:/p' \
     |tail -1 \
     |sed 's/cplayer: Playing: //g' \
@@ -230,8 +230,8 @@ function f_list(){
 }
 
 function f_kill(){
-    [[ -f /tmp/pplay_pid ]] && {
-        kill -9 $(cat "/tmp/pplay_pid" ) 2>/dev/null
+    [[ -f "$pidfile" ]] && {
+        kill -9 $(cat "$pidfile" ) 2>/dev/null
     }
 }
 
@@ -320,15 +320,15 @@ function f_chmode(){
 }
 
 function f_pid(){
-    ! [[ -f /tmp/pplay_pid ]] && return
-    pid=$(cat "/tmp/pplay_pid")
+    ! [[ -f "$pidfile" ]] && return
+    pid=$(cat "$pidfile")
     if pgrep mpv | grep -w $pid >/dev/null
         then echo $pid
     fi
 }
 
 function f_info(){
-    tail -f /tmp/pplay_data
+    tail -f "$datafile"
 }
 
 function f_search(){
@@ -351,22 +351,20 @@ function f_search(){
 }
 
 function f_load(){
-    playlist="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)"
     f_search "$@" | while read -r l ; do
                         id=$(echo "$l" | cut -d: -f1)
                         php -f "$phpPplay" f=getfile "id=$id"
                         echo
-                    done > "/tmp/pplay_$playlist"
-    echo "$playlist" > /tmp/pplay_list
-    [[ -f /tmp/pplay_pid ]] && {
-        kill -9 $(cat "/tmp/pplay_pid" ) 2>/dev/null
+                    done > "$playlistFile"
+    [[ -f "$pidfile" ]] && {
+        kill -9 $(cat "$pidfile" ) 2>/dev/null
     }
     mpv --input-ipc-server=$mpvsocketfile \
         --quiet \
-        --playlist="/tmp/pplay_$playlist" \
-        --volume=30 > "/tmp/pplay_data" 2>&1  & disown
+        --playlist="$playlistFile" \
+        --volume=30 > "$datafile" 2>&1  & disown
     pid="$!"
-    echo "$pid" >| "/tmp/pplay_pid"
+    echo "$pid" >| "$pidfile"
 }
 
 function f_remove(){

@@ -32,7 +32,7 @@ while true ; do
        || (( $index != 0 )) \
        || (( $ii > 30 )) ; then
            bash "$(dirname $(realpath "$0") )/wchanger.sh" >/tmp/wchanger_wlog
-        ii=0
+            ii=0
     fi
     ii=$((ii+1))
     sleep 1

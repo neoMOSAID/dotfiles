@@ -30,8 +30,8 @@ while true ; do
                     >&2 echo "getting local lyrics"
                     bash "$getLocalLyrics" 1 mpv
                 else
-                    bash "$getLyrics"
                     >&2 echo "getting remote lyrics"
+                    bash "$getLyrics"
             fi
 		fi
 		continue
@@ -43,8 +43,12 @@ while true ; do
 			echo "$nowPlaying" > /tmp/pplay_mpd_LastPlayed
             code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
             if (( code == 0 ))
-                then bash "$getLocalLyrics" 1
-                else bash "$getLyrics"
+                then
+                    >&2 echo "getting local lyrics"
+                    bash "$getLocalLyrics" 1
+                else
+                    >&2 echo "getting remote lyrics"
+                    bash "$getLyrics"
             fi
 		fi
 		continue

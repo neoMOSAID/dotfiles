@@ -49,7 +49,8 @@ function createDB() {
     $query="CREATE TABLE IF NOT EXISTS `info`(
             `id` int(5) NOT NULL UNIQUE AUTO_INCREMENT PRIMARY KEY,
             `tag` varchar(100)  NOT NULL UNIQUE default '',
-            `description` varchar(500) NOT NULL DEFAULT ''
+            `name` varchar(500) NOT NULL DEFAULT '',
+            `alias` varchar(500) NOT NULL DEFAULT ''
             ) ";
     if(! $result = $mysqli->query($query)){
         printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
@@ -263,11 +264,13 @@ function addFile($name,$dir,$path){
     $mysqli->close();
 }
 
-function adddescription($tag,$desc){
+function adddescription($tag,$name,$alias){
     $mysqli = connectDB();
+    $name = addslashes($name);
+    $alias = addslashes($alias);
     $query =" insert ignore INTO info
-        (`tag`, `description`) VALUES
-        ('$tag', '$desc') ";
+        (`tag`, `name`,`alias`) VALUES
+        ('$tag', '$name', '$alias') ";
     if(! $result = $mysqli->query($query)){
         printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
         exit();
@@ -442,6 +445,29 @@ function getFcount($fid){
     $mysqli->close();
 }
 
+function orphanedFavs(){
+    $mysqli = connectDB();
+    $query="select t1.name from favs t1
+        left join favslist t2
+        on t1.fid = t2.id
+        WHERE t2.id IS NULL ";
+    if(! $result = $mysqli->query($query)){
+        printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
+        exit();
+    }
+    $n=$result->num_rows;
+    if ($n==0){
+        echo "no orphaned id found\n";
+    }else {
+        echo "these names exist in favs table and their fid no longer exists \n";
+        while ( $row = $result->fetch_array(MYSQLI_NUM) ) {
+            printf("%s\n", $row[0]);
+        }
+    }
+    $mysqli->close();
+
+}
+
 function resetRemoved(){
     $mysqli = connectDB();
     $query=" delete from categories
@@ -466,6 +492,18 @@ function resetRemoved(){
         printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
         exit();
     }
+    $mysqli->close();
+}
+
+function getFCategory($fid){
+    $mysqli = connectDB();
+    $query =" select category from favslist where id='$fid' ; ";
+    if(! $result = $mysqli->query($query)){
+        printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
+        exit();
+    }
+    $row = $result->fetch_array(MYSQLI_NUM);
+    printf("%s\n", $row[0]);
     $mysqli->close();
 }
 
@@ -573,6 +611,7 @@ function getDirCount($dir,$c){
 
 function getOredered($index,$c,$n){
     $index--;
+    if ( $index <= 0 ) $index=1;
     $mysqli = connectDB();
     $where=where_c($c);
     $query=" select path from downloaded t1
@@ -650,6 +689,18 @@ function lastName(){
     $mysqli->close();
 }
 
+function getTagName($tag){
+    $mysqli = connectDB();
+    $query = "select name from info where tag='$tag'";
+    if(! $result = $mysqli->query($query)){
+        printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
+        exit();
+    }
+    $row = $result->fetch_array(MYSQLI_NUM);
+    printf("%s\n", $row[0]);
+    $mysqli->close();
+}
+
 function changeList($id,$list,$c){
     $mysqli = connectDB();
     $query="update favslist set name='$list', category='$c' where id='$id' ";
@@ -718,9 +769,10 @@ if ( isset($_GET["f"]) ) switch ( $_GET["f"] ){
     case "adddesc" :
         if (defined('STDIN')) {
             $tag=$argv[2];
-            $desc=$argv[3];
+            $name=$argv[3];
+            $alias=$argv[4];
         }
-        adddescription($tag,$desc);
+        adddescription($tag,$name,$alias);
         break;
     case "downloaded" :
         if (defined('STDIN')) $id=$argv[2];
@@ -850,6 +902,21 @@ if ( isset($_GET["f"]) ) switch ( $_GET["f"] ){
         break;
     case "getall" :
         getALL();
+        break;
+    case "orphanedfavs" :
+        orphanedFavs();
+        break;
+    case "gettagname":
+        if (defined('STDIN')) {
+            $tag=$argv[2];
+        }
+        getTagName($tag);
+        break;
+    case "getfcategory":
+        if (defined('STDIN')) {
+            $fid=$argv[2];
+        }
+        getFCategory($fid);
         break;
 }
 
