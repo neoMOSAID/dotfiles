@@ -38,7 +38,7 @@ ${if_match "${exec cat /tmp/my_i3_ws}" != "10" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "13" }\
 ${if_match "${exec /home/mosaid/.i3/conky/conky-helper.sh}" == "playing" }\
 #${exec /home/mosaid/OneDrive/OneDrive/linux/scripts3/xcolor.sh }
-${execi 3 cat "/tmp/lastLyrics" |sed -n '36,$p'| head -n 31 }
+#${execi 3 cat "/tmp/lastLyrics" |sed -n '36,$p'| head -n 31 }
 ${endif}\
 ${endif}\
 ${endif}\

@@ -1,0 +1,67 @@
+# change list itmes
+update favs set fid='24' where fid='262' ;
+
+# generate names
+for i in {1000966..1001002} ; do echo "wallhaven-$i.jpg" ; done >| aa
+
+last=1001003
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ls -1 --color=never| grep --color=never wallhaven \
+| sed -E 's@wallhaven-([0-9]*).*$@\1@g' \
+|while read -r l ; do php -f ~/.i3/wchanger/db.php f=add $l m ; done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ls -1 --color=never| grep --color=never wallhaven \
+| sed -E 's@wallhaven-([0-9]*).*$@\1@g' \
+| while read -r l ; do echo $l d ; done
+
+

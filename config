@@ -185,7 +185,7 @@ for_window [class="mpv|Tor Browser|Transmission-gtk|vlc|Pavucontrol"] floating e
 for_window [class="Gnome-system-monitor|smplayer|Gnome-calculator"] floating enable border normal
 for_window [class="Pidgin|Woeusbgui|Wicd-client.py"] floating enable border normal
 for_window [class="VirtualBox Manager|florence|Florence"] floating enable border normal
-for_window [class="TelegramDesktop"] floating enable border normal
+for_window [class="TelegramDesktop|Qalculate-gtk"] floating enable border normal
 for_window [class="feh"] floating enable move absolute position 0px 0px
 #for_window [class="VirtualBox Machine"] floating enable, resize set 1601 900, move position 0 0
 

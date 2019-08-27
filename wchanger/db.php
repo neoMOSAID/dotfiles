@@ -354,7 +354,7 @@ function getFileByName($name){
 
 function getALL(){
     $mysqli = connectDB();
-    $query =" select path from downloaded ; ";
+    $query =" select path from downloaded where path <> '' ";
     if(! $result = $mysqli->query($query)){
         printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
         exit();
@@ -472,10 +472,7 @@ function resetRemoved(){
     $mysqli = connectDB();
     $query=" delete from categories
              where name in (
-                select t1.name from downloaded t1
-                right join categories t2
-                on t1.name = t2.name
-                where t2.category='x' and t1.name is not null
+                select name from downloaded where path = ''
              ) ; " ;
     if(! $result = $mysqli->query($query)){
         printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
@@ -483,13 +480,24 @@ function resetRemoved(){
     }
     $query=" delete from favs
              where name in (
-                select t2.name from downloaded t1
-                right join favs t2
-                on t1.name = t2.name
-                where t1.path is null
+                select name from downloaded where path = ''
              ) ; " ;
     if(! $result = $mysqli->query($query)){
         printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
+        exit();
+    }
+    $mysqli->close();
+}
+
+//function getDuplicates(){
+//    $query="SELECT name, COUNT(*) c FROM downloaded GROUP BY name HAVING c > 1;";
+//}
+
+function fixPath($id){
+    $mysqli = connectDB();
+    $query="update downloaded set path='', dir='' where name='$id' ";
+    if(! $result = $mysqli->query($query)){
+        printf("err@%s : %s\n",__FUNCTION__, $mysqli->error );
         exit();
     }
     $mysqli->close();
@@ -512,7 +520,7 @@ function getUncategorised(){
     $query="select t1.path from downloaded t1
             left join categories t2
             on t1.name = t2.name
-            WHERE t2.id IS NULL ";
+            WHERE t2.id IS NULL and t1.path <> '' ";
     if(! $result = $mysqli->query($query)){
         printf("@%s: %s\n",__FUNCTION__, $mysqli->error );
         exit();
@@ -917,6 +925,12 @@ if ( isset($_GET["f"]) ) switch ( $_GET["f"] ){
             $fid=$argv[2];
         }
         getFCategory($fid);
+        break;
+    case "fixpath":
+        if (defined('STDIN')) {
+            $id=$argv[2];
+        }
+        fixPath($id);
         break;
 }
 

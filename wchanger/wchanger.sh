@@ -35,28 +35,30 @@ function _x_(){
             echo not a wallhaven wallpaper
             exit
         fi
-        php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
+        php -f "$wallhavenPhp" f="fixpath" "$pic"
     fi
+    echo "" >| "$errlog"
     exit
 }
 
 function update_f(){
-    echo scanning and adding files...
-    #php -f "$wallhavenPhp" f=reset
-    cd "$wallhavenDir"
-    data="$( find "$PWD" -type f -iname "wallhaven*" 2>/dev/null)"
-    NB=$(echo "$data" | wc -l )
-    nb=0
-    while read -r l ; do
-        id=$( basename "$l" |sed -E 's@wallhaven-(.*)\..*$@\1@g')
-        dir=$( dirname "$l" )
-        dir=${dir##*/}
-        php -f "$wallhavenPhp" f=add "$id" "$dir" "$l"
-        nb=$((nb+1))
-        percentage=$( bc -l <<< "scale=2; $nb * 100 / $NB" )
-        printf '%7d/%d  : %3.2f%%\n' "$nb" "$NB"   "$percentage"
-        echo -en "\e[1A"
-    done <<< "$data"
+    if [[ "$1" == scan ]] ; then
+        echo scanning and adding files...
+        cd "$wallhavenDir"
+        data="$( find "$PWD" -type f -iname "wallhaven*" 2>/dev/null)"
+        NB=$(echo "$data" | wc -l )
+        nb=0
+        while read -r l ; do
+            id=$( basename "$l" |sed -E 's@wallhaven-(.*)\..*$@\1@g')
+            dir=$( dirname "$l" )
+            dir=${dir##*/}
+            php -f "$wallhavenPhp" f=add "$id" "$dir" "$l"
+            nb=$((nb+1))
+            percentage=$( bc -l <<< "scale=2; $nb * 100 / $NB" )
+            printf '%7d/%d  : %3.2f%%\n' "$nb" "$NB"   "$percentage"
+            echo -en "\e[1A"
+        done <<< "$data"
+    fi
     echo cleaning up...
     data=$(
         php -f "$wallhavenPhp" f=getall
@@ -64,17 +66,18 @@ function update_f(){
     while read -r l ; do
         if ! [[ -f "$l" ]] ; then
             id=$( basename "$l" |sed -E 's@wallhaven-(.*)\..*$@\1@g')
-            php -f "$wallhavenPhp" f="fixcategory" "$id" x
-            echo "$id does not exist. marked"
+            php -f "$wallhavenPhp" f="fixpath" "$id"
+            echo "$id deleted"
         fi
     done <<< "$data"
     echo "removing deleted from categories and favs"
     php -f "$wallhavenPhp" f="resetRemoved"
+    exit
 }
 
 
 [[ "$1" == "x" ]] && _x_
-[[ "$1" == "updatedb" ]] && update_f
+[[ "$1" == "updatedb" ]] && update_f "$2"
 
 cmdline=$(ps -af | grep -v grep |grep wchanger.sh|grep updatedb )
 is_running=$( pgrep -fc  "$(realpath "$0" )" )
@@ -83,12 +86,34 @@ if (( $is_running >= 2 )) && [[ "$cmdline" == "" ]] ; then
     exit 0
 fi
 
+function modes_f(){
+    echo "getFav :get wallpapers from favs list"
+    echo "getDir :get wallpapers by dir (wallhaven)"
+    echo "getLD :local dir (not wallhaven)"
+    echo "getwW :web or offline ( by search tag)"
+    echo "getOr :all available wallpapers (by category)"
+    echo "getP :a single unchanging wallpaper"
+    echo "wDisable : disable wallpaper changer"
+}
+
+function localDirs_f(){
+    dir0="/run/media/mosaid/My_Data/images"
+    dir1="/run/media/mosaid/My_Data/images/001 images"
+    echo "All Images:${dir1}"
+    echo "Post Apocalyptic Wallpapers:${dir0}/collectionWallpapers/Post Apocalyptic Wallpapers"
+    echo "Nature Wallpapers:${dir1}/Nature Wallpapers"
+    echo "Islamic Wallpapers:${dir0}/Islamic.Wallpapers"
+    echo "my spring photos:${dir1}/Fantasy/untitled folder"
+    echo "Spring Nature Wallpapers:${dir1}/Nature Wallpapers/Spring Nature Wallpapers"
+    echo "fields:${HOME}/Pictures/wallpapers/fields"
+}
+
 function _printhelp () {
     printf '\033[1;31m  %-23s\033[1;0m\t%s\n' "$1" "$2"
 }
 
 function f_help(){
-    printf '\033[01;33m'
+   printf '\033[01;33m'
    echo "
    multi layred wallpaper changer for i3wm powered by a mysql database,
    each workspace can have up to 8 states,
@@ -104,37 +129,41 @@ function f_help(){
     _printhelp "af|addfav"                     "add current wallpaper to favs"
     _printhelp "al|addlist [id] [name] [c]"    "add list"
     _printhelp "c"                             "current wallpaper path"
-    _printhelp "cl"                            "current favsList"
+    _printhelp "cl"                            "current wallpapers list"
     _printhelp "cm"                            "current mode"
     _printhelp "chl [id] [name] [c]"           "edit list name/category"
-    _printhelp "d|download [id] [c]"           "download image by wallhaven id"
+    _printhelp "d|download [id]"               "download image by wallhaven id"
     _printhelp "dim"                           "wallpaper dimensions"
-    _printhelp "dir"                           "wallpapers directory"
-    _printhelp "fav"                      "change favsList"
-    _printhelp "fix"                           "change current wallpaper's category"
+    _printhelp "dir"                           "set local wallpapers directory"
+    _printhelp "fav"                           "change favsList"
+    _printhelp "f|fix"                         "change current wallpaper's category"
     _printhelp "g [number]"                    "jump to wallpaper"
     _printhelp "get"                           "get"
     _printhelp "h,help"                        "print this help"
     _printhelp "i|id"                          "current wallpaper's wallhaven id"
     _printhelp "info"                          "info about current workspace states"
-    _printhelp "l|list"                        "a montage of the next 50 wallpapers"
+    _printhelp "infoall"                       "info about all workspaces "
+    _printhelp "keys"                          "i3 keyboard shortcuts"
+    _printhelp "l|list [o,l,number]"           "a montage of the next 50 wallpapers"
     _printhelp "lm"                            "list of available modes"
     _printhelp "o"                             "open current wallpaper in feh"
     _printhelp "ow"                            "open current wallpaper in browser"
     _printhelp "p|pause"                       "enable/disable wallpaper changing"
     _printhelp "r|rm"                          "remove from favs"
-    _printhelp "sc"                            "set which wallpaper category to show"
     _printhelp "sd|setdir"                     "set wallhaven directory"
-    _printhelp "set"                           "set"
-    _printhelp "sp|setpause"                   "set current wallpaper as pause wallpaper"
-    _printhelp "sm|setmode"                    "set mode for current workspace"
+    _printhelp "sdc"                           "set directory category"
+    _printhelp "soc"                           "set ordered category"
+    _printhelp "swc"                           "set web category"
+    _printhelp "swi"                           "set web search tag"
+    _printhelp "sp|setpause [number]"          "set current wallpaper as pause"
+    _printhelp "sm|setmode [number]"           "set mode for current workspace"
+    _printhelp "up|unsetpause"                 "unset pause wallpaper"
     _printhelp "u|unexpire"                    "enable password mode"
     _printhelp "url"                           "wallhaven search url"
-    _printhelp "updatedb"                      "update database"
-    _printhelp "+,-"                           "next/prev wallpaper"
+    _printhelp "updatedb [scan]"               "update database"
+    _printhelp "+,-,number"                    "next/prev wallpaper"
     _printhelp "wlist [sdm]"                   "print favsLists names"
-    _printhelp "wid"                           "set web id"
-    _printhelp "x"                             "remove current wallpaper"
+    _printhelp "x"                             "delete current wallpaper"
     _printhelp "zoom"                          "experimental not working"
     exit
 }
@@ -147,7 +176,7 @@ function GETFID(){
         >&2 echo "first use? run : $(basename "$0") u"
         exit
     fi
-    php -f "$wallhavenPhp" f=wh_get "ws${workspace}FID_$notexpired"
+    php -f "$wallhavenPhp" f=wh_get "ws${workspace}_FID_$notexpired"
 }
 
 # $1 : category [sdm]
@@ -202,7 +231,7 @@ function printFav(){
         >&2 echo "no list was chosen"
         exit
     fi
-    index=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_$fid" )
+    index=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_${fid}_i_$notexpired" )
     [[ -z "$index" ]] && index=1
     php -f "$wallhavenPhp" f=getfavs "$fid" | sed 's/^[0-9]*://g' > /tmp/chwlp_feh_dir_list
     case "$1" in
@@ -295,14 +324,15 @@ function pass_f(){
     fi
 }
 
-# $1 [sdm]
+# $1 workspace
 # $2 f
 function changeFavList(){
+    ! [[ -z "$1" ]] && workspace=$1
     msg="select fav list for workspace $workspace"
     c=$( printf "d\nm\ns" \
         |rofi -dmenu -p "category" -width -30 )
     if [[ "$c" != d ]] && [[ "$c" != 'm' ]] && [[ $notexpired == "0" ]] ; then
-        [[ "$1" != "f" ]] \
+        [[ "$2" != "f" ]] \
         && dunstify -u normal -r "$msgId" "wallpaper changer" "not permitted" \
         && exit
         (( $( pass_f) == 0 )) && {
@@ -317,46 +347,31 @@ function changeFavList(){
         exit
     fi
     (( $fid == 0 )) && fid=""
-    php -f "$wallhavenPhp" f=wh_set "ws${workspace}FID_$notexpired" "$fid"
+    php -f "$wallhavenPhp" f=wh_set "ws${workspace}_FID_$notexpired" "$fid"
 }
 
 function dirHandler(){
-    dir0="/run/media/mosaid/My_Data/images"
-    dir1="/run/media/mosaid/My_Data/images/001 images"
-    declare -A arr=()
-    arr=(
-    ["All Images"]="${dir1}"
-    ["Post Apocalyptic Wallpapers"]="${dir0}/collectionWallpapers/Post Apocalyptic Wallpapers"
-    ["Nature Wallpapers"]="${dir1}/Nature Wallpapers"
-    ["Islamic Wallpapers"]="${dir0}/Islamic.Wallpapers"
-    ["my spring photos"]="${dir1}/Fantasy/untitled folder"
-    ["Spring Nature Wallpapers"]="${dir1}/Nature Wallpapers/Spring Nature Wallpapers"
-    ["fields"]="${HOME}/Pictures/wallpapers/fields"
-    )
 
-    LIST=$( for k in "${!arr[@]}" ; do
-                printf '%s\n' "$k"
-            done
-    )
     ans=$(
-        echo "$LIST" |rofi -dmenu -p "ws $workspace wallpapers list" -width -60
+        localDirs_f \
+        |awk -F: '{print $1}' \
+        |rofi -dmenu -p "ws $workspace wallpapers list" -width -60
     )
     if [[ -z "$ans" ]] ; then
         >&2 echo "empty choice"
         exit
     fi
-    php -f "$wallhavenPhp" f=wh_set "ws${workspace}_dir_$notexpired"  "${arr[$ans]}"
-
+    ans=$( localDirs_f \
+        |awk -F: -v v="$ans" '{if ($1 == v ) print $2}'
+    )
+    php -f "$wallhavenPhp" f=wh_set "ws${workspace}_dir_$notexpired" "$ans"
 }
 
 # $1 can be workspace
 function setPauseW(){
     ! [[ -z "$1" ]] && [[ "$1" != "f" ]] && workspace=$1
     id=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-    if [[ -z "$id" ]] ; then
-        echo not a wallhaven wallpaper
-        exit
-    fi
+    [[ -z "$id" ]] && id="$(_pic_)"
     if [[ -z "$notexpired" ]] ; then
         >&2 echo "u not defind"
         exit
@@ -413,23 +428,28 @@ function fix_m(){
 
 # $1 : n,p,"",number
 # $2 : number of paths to fetch
-function getOrdered(){
+function getOr(){
     pause=$(
-        php -f "$wallhavenPhp" f=wh_get "ws${workspace}pauseValue_$notexpired"
+        php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_$notexpired"
     )
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
             >&2 echo "first use ? run : $(basename $0) p"
         else
-            (( $pause == 1 )) && getPauseW
+            (( $pause == 1 )) && getP
     fi
     category="$(get_ordered_c)"
+    [[ -z "$category" ]] && {
+        >&2 echo "category not set"
+        >&2 echo "first use ? run : $(basename $0) soc"
+        exit
+    }
     if (( $cl == 1 )) ; then
-        echo "all available wallpapers in the category : $category"
+        echo "all available wallpapers (category $category)"
         exit
     fi
-    name="ws${workspace}_lastindex_$category"
+    name="ws${workspace}_orederd_i_$category"
     index=$(php -f "$wallhavenPhp" f=wh_get "$name" )
     N=$(php -f "$wallhavenPhp" f=getorderedcount "$category" )
     index=$((index+goto))
@@ -461,9 +481,8 @@ function getOrdered(){
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max   "$pic" "$secondPIC"
     else
-        echo "$pic" >> "$errlog"
+        echo "$(date '+%Y-%m-%d-%H:%M:%S'):$pic" >> "$errlog"
         pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-        #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
         >&2 echo "error file : $pic"
     fi
 }
@@ -472,10 +491,6 @@ function getOrdered(){
 # $2 : ...
 # $3 : second image
 function getDwall () {
-    if (( $cl == 1 )) ; then
-        echo "$1"
-        exit
-    fi
     if ! [[ -f "$1/.wcount" ]] ; then
          echo "0" >| "$1/.wcount"
     fi
@@ -527,7 +542,7 @@ function getDwall () {
 	echo "$n" >| "$1/.wcount"
 }
 
-function getPauseW(){
+function getP(){
     id=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_id_$notexpired" )
     if [[ -z "$id" ]] ; then
         >&2 echo "pause wallpaper id undefined "
@@ -535,27 +550,31 @@ function getPauseW(){
         exit
     fi
     pic=$(php -f "$wallhavenPhp" f=get "$id" )
-    [[ -z "$pic" ]] && pic="$id"
+    [[ -z "$pic" ]] && pic=$id
     if (( $cl == 1 )) ; then
         echo "pause : $pic"
         exit
     fi
-    if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
-        feh --bg-max   "$pic" "$secondPIC"
+    if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null`
+        then
+            feh --bg-max   "$pic" "$secondPIC"
+        else
+            echo "$(date '+%Y-%m-%d-%H:%M:%S'):$pic" >> "$errlog"
+            >&2 echo "error file : $pic"
     fi
     exit
 }
 
 function getFav(){
     pause=$(
-        php -f "$wallhavenPhp" f=wh_get "ws${workspace}pauseValue_$notexpired"
+        php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_$notexpired"
     )
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
             >&2 echo "first use ? run : $(basename $0) p"
         else
-            (( $pause == 1 )) && getPauseW
+            (( $pause == 1 )) && getP
     fi
     fid=$( GETFID )
     if [[ -z "$fid" ]] ; then
@@ -568,7 +587,7 @@ function getFav(){
         exit
     fi
     N=$( php -f  "$wallhavenPhp" f=getfcount "$fid" )
-    id=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_$fid" )
+    id=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_${fid}_i_$notexpired" )
     id=$((id+goto))
     case "$1" in
         ""|+) id=$((id+1)) ;;
@@ -584,21 +603,20 @@ function getFav(){
     if (( $id <=0 )) ; then id=$N ; fi
     id=$((id+0))
     pic="$(php -f "$wallhavenPhp" f=getfav $fid $id )"
-    php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_$fid"  "$id"
+    php -f "$wallhavenPhp" f=wh_set "ws${workspace}_${fid}_i_$notexpired"  "$id"
     echo "$id/$N"
     echo "$id/$N" >| /tmp/wchanger_wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max   "$pic" "$secondPIC"
         else
-            echo "$pic" >> "$errlog"
+            echo "$(date '+%Y-%m-%d-%H:%M:%S'):$pic" >> "$errlog"
             pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-            #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
             >&2 echo "error file : $pic"
     fi
 }
 
 function set_web_id (){
-    name="web_id_${workspace}_${notexpired}"
+    name="ws${workspace}_web_id_${notexpired}"
     if [[ -z "$1" ]]
         then
             squery=$( php -f "$wallhavenPhp" f=getwebids \
@@ -612,46 +630,54 @@ function set_web_id (){
         else
             squery="$1"
     fi
+    name2="ws${workspace}_offline_dir_${notexpired}"
     php -f "$wallhavenPhp" f=wh_set "$name" "$squery"
+    php -f "$wallhavenPhp" f=wh_set "$name2" "$squery"
     echo "$name = $squery"
 }
 
-function get_web_id (){
-    name="web_id_${workspace}_${notexpired}"
-    php -f "$wallhavenPhp" f=wh_get "$name"
+
+function set_category_f(){
+    name="$1"
+    list=$(
+        printf "d\nm\ndm\n"
+        (( $notexpired == 1 )) && printf "s\nds\nsm\n"
+    )
+    ans=$(
+    echo "$list" | sort \
+        |rofi -dmenu -p "set $name" -width -40
+    )
+    [[ -z "$ans" ]] && exit
+    php -f "$wallhavenPhp" f=wh_set "$name" "$ans"
+}
+
+function set_dir_c(){
+    cname="ws${workspace}_wdir_c_${notexpired}"
+    set_category_f "$cname"
+}
+
+
+function set_web_c(){
+    cname="ws${workspace}_web_c_${notexpired}"
+    set_category_f "$cname"
 }
 
 function set_ordered_c(){
-    name="ws${workspace}_ordered_wallhaven_${notexpired}_c"
-    list=$(
-        printf "d\nm\ndm\n"
-        if (( $notexpired == 0 )) ; then
-            (( $( pass_f) == 1 )) && printf "s\nds\nsm\n"
-        fi
-    )
-    ans=$(
-        echo "$list" | sort \
-        |rofi -dmenu -p "set $name" -width -60
-    )
-    [[ -z "$ans" ]] && exit
-    echo "$ans"
-    php -f "$wallhavenPhp" f=wh_set "$name" "$ans"
+    name="ws${workspace}_ordered_c_${notexpired}"
+    set_category_f "$name"
 }
 
 # $1 notexpired
 function get_ordered_c(){
     ! [[ -z "$1" ]] && local notexpired=$1
-    name="ws${workspace}_ordered_wallhaven_${notexpired}_c"
+    name="ws${workspace}_ordered_c_${notexpired}"
     c=$( php -f "$wallhavenPhp" f=wh_get "$name" )
-    if [[ -z "$c" ]]
-        then echo "$(set_ordered_c)"
-        else echo "$c"
-    fi
+    echo "$c"
 }
 
 # from dir (pause)
 # $1 control passed through
-function wsGetW(){
+function getLD(){
     dir="$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_dir_$notexpired" )"
     if ! [[ -d "$dir" ]] || [[ -z "$dir" ]] ; then
         >&2 echo "wallpaper dir not defined or invalid"
@@ -659,47 +685,64 @@ function wsGetW(){
         exit
     fi
     pause=$(
-        php -f "$wallhavenPhp" f=wh_get "ws${workspace}pauseValue_$notexpired"
+        php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_$notexpired"
     )
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
             >&2 echo "first use? run : $(basename $0) p"
         else
-            [[ "$2" == p ]] && (( $pause == 1 )) && getPauseW
+            (( $pause == 1 )) && getP
     fi
-    getDwall "$dir" "$1"
-}
-
-function wsGetWP(){
-    wsGetW "$1" p
+    if (( $cl == 1 )) ; then
+        dir=$( localDirs_f \
+            |awk -F: -v v="$dir" '{if ($2 == v ) print $1}'
+        )
+        echo "local dir : $dir"
+        exit
+    fi
+    getDwall "$dir" "$1" "$secondPIC"
 }
 
 # random : web or offline
-function wsGetwWR(){
-    if (( $cl == 1 )) ; then
-        echo "web wallhaven"
-        exit
-    fi
+function getwW(){
     pause=$(
-        php -f "$wallhavenPhp" f=wh_get "ws${workspace}pauseValue_$notexpired"
+        php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_$notexpired"
     )
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
             >&2 echo "first use? run : $(basename "$0") p"
         else
-            (( $pause == 1 )) && getPauseW
+            (( $pause == 1 )) && getP
     fi
     code=$(ping -c 1 8.8.8.8 2>&1 |grep unreachable >/dev/null; echo $? )
     if (( code == 0 ))
           then
-              pic=$(php -f "$wallhavenPhp" f=getrandom d )
+              getDir "$@"
           else
-              squery="$(get_web_id)"
-              if (( $notexpired == 1 )) ;
-                    then c='s'
-                    else c='d'
+              sname="ws${workspace}_web_id_${notexpired}"
+              squery=$(php -f "$wallhavenPhp" f=wh_get "$sname")
+              [[ -z "$squery" ]] && {
+                  >&2 echo "search query not set"
+                  >&2 echo "first use? run : $(basename "$0") swi "
+                  exit
+              }
+              cname="ws${workspace}_web_c_${notexpired}"
+              c=$(php -f "$wallhavenPhp" f=wh_get "$cname")
+              [[ -z "$c" ]] && {
+                  >&2 echo "search category not set"
+                  >&2 echo "first use? run : $(basename "$0") swc "
+                  exit
+              }
+              if (( $cl == 1 )) ; then
+                  number='^[0-9]+$'
+                  if [[ "$squery" =~ $number ]] ; then
+                      tagname=$( php -f "$wallhavenPhp" f=gettagname "$squery" )
+                      squery=$tagname
+                  fi
+                  echo "web wallhaven : $squery (category $c)"
+                  exit
               fi
               pic=$( "$wallhavenScript" "$c" "$squery" )
     fi
@@ -709,7 +752,6 @@ function wsGetwWR(){
         else
             pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
             [[ -z "$pic" ]] && exit
-            #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
             >&2 echo "error file : $pic"
     fi
 }
@@ -722,12 +764,19 @@ function uncategorised(){
 }
 
 function printWdir(){
-    if (( $notexpired == 1 ))
-        then c=sm
-        else c=dm
+    if [[ "$(wsgetMode)" == "getwW" ]]
+    then
+        dname="ws${workspace}_offline_dir_${notexpired}"
+        iname="ws${workspace}_offline_i_${notexpired}"
+        cname="ws${workspace}_web_c_${notexpired}"
+    else
+        dname="ws${workspace}_wdir_$notexpired"
+        iname="ws${workspace}_wdir_i_${notexpired}"
+        cname="ws${workspace}_wdir_c_${notexpired}"
     fi
-    dir=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_wdir_$notexpired" )
-    index=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_wdir_${notexpired}_$c" )
+    dir=$(php -f "$wallhavenPhp" f=wh_get "$dname" )
+    index=$(php -f "$wallhavenPhp" f=wh_get "$iname" )
+    c=$(php -f "$wallhavenPhp" f=wh_get "$cname" )
     php -f "$wallhavenPhp" f=getdir "$dir" 1 50000 $c > /tmp/chwlp_feh_dir_list
     case "$1" in
         o)
@@ -759,7 +808,7 @@ function printOrd(){
         exit
     fi
     c=$(get_ordered_c)
-    name="ws${workspace}_lastindex_$c"
+    name="ws${workspace}_orederd_i_$c"
     index=$(php -f "$wallhavenPhp" f=wh_get "$name" )
     php -f "$wallhavenPhp" f=getordered 1 $c 50000 > /tmp/chwlp_feh_dir_list
     case "$1" in
@@ -820,8 +869,8 @@ function listthem(){
     mode=$(wsgetMode)
     case "$mode" in
                 getFav) printFav  "$1" ;;
-        wsGetW|wsGetWP) printDir  "$1" ;;
-            getOrdered) printOrd  "$1" ;;
+                getLD) printDir  "$1" ;;
+            getOr) printOrd  "$1" ;;
                 getDir) printWdir "$1" ;;
     esac
     dunstify -u normal -r "$msgId"  "wallpaper changer" "not a printable list"
@@ -858,8 +907,9 @@ function wlist_f (){
 function setPauseValue(){
     ! [[ -z "$1" ]] && [[ "$1" != "f" ]] && workspace=$1
     pause=$(
-        php -f "$wallhavenPhp" f=wh_get "ws${workspace}pauseValue_$notexpired"
+        php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_$notexpired"
     )
+    [[ -z "$pause" ]] && pause=0
     if (( $pause == 0 ))
     then
         pause=1
@@ -868,7 +918,7 @@ function setPauseValue(){
         pause=0
         msg="ENABLED"
     fi
-    php -f "$wallhavenPhp" f=wh_set "ws${workspace}pauseValue_$notexpired"  "$pause"
+    php -f "$wallhavenPhp" f=wh_set "ws${workspace}_pause_$notexpired"  "$pause"
     message="wallpaper changing is <b>$msg</b> for workspace $workspace"
     echo "$msg"
     dunstify -u normal -r "$msgId" "wallpaper changer" "$message"
@@ -902,17 +952,6 @@ function getData(){
 
 function wDisable(){
     echo "wallpaper changing is disabled."
-}
-
-function modes_f(){
-    echo "getFav :get wallpapers from favs list [0,1,pause]"
-    echo "getDir :get wallpapers by dir (wallhaven)"
-    echo "wsGetW :local dir (not wallhaven) [0,1]"
-    echo "wsGetWP :local dir (not wallhaven) [0,1,pause]"
-    echo "wsGetwWR :random web or offline [0,1]"
-    echo "getOrdered :all available wallpapers (sorted by category) [0,1]"
-    echo "getPauseW :a single unchanging wallpaper [0,1]"
-    echo "wDisable : disable wallpaper changer"
 }
 
 function wsSetMode(){
@@ -960,7 +999,6 @@ function changeListName(){
 }
 
 function setDir(){
-    t="select directory"
     if [[ -z  "$1" ]]
         then c=d
         else c=$1
@@ -972,14 +1010,28 @@ function setDir(){
         }
         echo
     fi
-    data="unset dir\n"
-    data+="$( php -f "$wallhavenPhp" f=getdirs "$c" )"
-    dir=$( printf "$data" | sort \
-        | rofi -dmenu -p "$t" -width -60
+    number='^[0-9]+$'
+    declare -A arr=()
+    arr["unset dir"]="unset dir"
+    while read -r l ; do
+        if [[ "$l" =~ $number ]] ; then
+            d=$( php -f "$wallhavenPhp" f=gettagname "$l" )
+            else d="$l"
+        fi
+        [[ ! -z "$d" ]] && arr["$d"]="$l"
+    done <<< "$( php -f "$wallhavenPhp" f=getdirs "$c" )"
+    LIST=$( for k in "${!arr[@]}" ; do echo "$k" ; done )
+    msg="select directory for workspace $workspace"
+    ans=$(
+        echo "$LIST" \
+        | sort \
+        |rofi -dmenu -p "$msg" -width -80
     )
-    if [[ -z "$dir" ]] ; then
-        >&2 echo "empty choice"
-        exit
+    if ! [[ -z "$ans" ]]
+        then dir="${arr[$ans]}"
+        else
+            echo "empty choice"
+            exit
     fi
     [[ "$dir" == "unset dir" ]] && dir=""
     php -f "$wallhavenPhp" f=wh_set "ws${workspace}_wdir_$notexpired" "$dir"
@@ -987,30 +1039,47 @@ function setDir(){
 
 function getDir(){
     pause=$(
-        php -f "$wallhavenPhp" f=wh_get "ws${workspace}pauseValue_$notexpired"
+        php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_$notexpired"
     )
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
             >&2 echo "first use? run : $(basename "$0") p"
-        else (( $pause == 1 )) && getPauseW
+        else (( $pause == 1 )) && getP
     fi
-    dir=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_wdir_$notexpired" )
+    if [[ "$(wsgetMode)" == "getwW" ]]
+        then
+             dname="ws${workspace}_offline_dir_${notexpired}"
+             iname="ws${workspace}_offline_i_${notexpired}"
+             cname="ws${workspace}_web_c_${notexpired}"
+        else
+             dname="ws${workspace}_wdir_$notexpired"
+             iname="ws${workspace}_wdir_i_${notexpired}"
+             cname="ws${workspace}_wdir_c_${notexpired}"
+    fi
+    dir=$(php -f "$wallhavenPhp" f=wh_get "$dname" )
     if [[ -z "$dir" ]] ; then
         >&2 echo "wallpaper directory not set"
         >&2 echo "first use? run : $(basename "$0") sd"
         exit
     fi
+    c=$(php -f "$wallhavenPhp" f=wh_get "$cname" )
+    [[ -z "$c" ]] && {
+        >&2 echo "category not set"
+        >&2 echo "first use? run : $(basename "$0") sdc"
+        exit
+    }
     if (( $cl == 1 )) ; then
-        echo "dir : $dir"
+        number='^[0-9]+$'
+        if [[ "$dir" =~ $number ]] ; then
+            tagname=$( php -f "$wallhavenPhp" f=gettagname "$dir" )
+            dir=$tagname
+        fi
+        echo "dir : $dir (category $c)"
         exit
     fi
-    if (( $notexpired == 1 ))
-        then c=sm
-        else c=dm
-    fi
     N=$( php -f  "$wallhavenPhp" f=getdircount "$dir" "$c" )
-    id=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_lastindex_wdir_${notexpired}_$c" )
+    id=$(php -f "$wallhavenPhp" f=wh_get "$iname" )
     id=$((id+goto))
     case "$1" in
         ""|+) id=$((id+1)) ;;
@@ -1026,18 +1095,17 @@ function getDir(){
     if (( $id <=0 )) ; then id=$N ; fi
     id=$((id+0))
     pic="$(php -f "$wallhavenPhp" f=getdir "$dir" "$id" 1 "$c" )"
-    php -f "$wallhavenPhp" f=wh_set "ws${workspace}_lastindex_wdir_${notexpired}_$c"  "$id"
+    php -f "$wallhavenPhp" f=wh_set "$iname"  "$id"
     echo "$id/$N"
     echo "$id/$N" >| /tmp/wchanger_wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max   "$pic" "$secondPIC"
     else
-        echo "$pic" >> "$wchanger_errlog"
+        echo "$pic" >> "$errlog"
         pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-        #php -f "$wallhavenPhp" f=fixcategory "$pic" "x"
         >&2 echo "error file : $pic"
     fi
-
+    exit
 }
 
 function f_keys(){
@@ -1053,88 +1121,89 @@ function f_keys(){
 }
 function getFav_info(){
     local info=""
-    fid=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}FID_$1" )
+    fid=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_FID_$1" )
     str="$(php -f "$wallhavenPhp" f=getfavname "$fid" )"
     ! [[ -z "$str" ]] && info="$str"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-13s: %s\n' "getFav $1" "$info"
+    printf '%-10s: %s\n' "$1-getFav" "$info"
 }
 
-function wsGetW_info(){
+function getLD_info(){
     local info=""
     dir=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_dir_$1" )
     ! [[ -z "$dir" ]] && info="$(basename "$dir")"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-13s: %s\n' "wsGetW $1" "$info"
+    printf '%-10s: %s\n' "$1-getLD" "$info"
 }
 
-function wsGetwWR_info(){
+function getwW_info(){
     local info=""
-    tag=$(php -f "$wallhavenPhp" f=wh_get "web_id_${workspace}_$1")
+    tag=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_web_id_$1")
     tagname=$( php -f "$wallhavenPhp" f=gettagname "$tag" )
+    c=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_web_c_$1")
     ! [[ -z "$tagname" ]] && info="$tagname"
+    ! [[ -z "$c" ]] && info+=" (category $c)"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-13s: %s\n' "wsGetwWR $1" "$info"
+    printf '%-10s: %s\n' "$1-getwW" "$info"
 }
 
-function getOrdered_info(){
+function getOr_info(){
     local info=""
-    name="ws${workspace}_ordered_wallhaven_$1_c"
+    name="ws${workspace}_ordered_c_$1"
     category=$( php -f "$wallhavenPhp" f=wh_get "$name" )
     ! [[ -z "$category" ]] && {
         info="category $category"
     }
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-13s: %s\n' "getOrdered $1" "$info"
+    printf '%-10s: %s\n' "$1-getOr" "$info"
 }
 
 function getDir_info(){
     local info=""
-    if (( $1 == 1 ))
-        then c=sm
-        else c=dm
-    fi
     dir=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_wdir_$1" )
+    c=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_wdir_c_$1" )
+    number='^[0-9]+$'
+    if [[ "$dir" =~ $number ]] ; then
+        tagname=$( php -f "$wallhavenPhp" f=gettagname "$dir" )
+        dir=$tagname
+    fi
     ! [[ -z "$dir" ]] && info="$dir (category $c)"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-13s: %s\n' "getDir $1" "$info"
+    printf '%-10s: %s\n' "$1-getDir" "$info"
 }
 
-function getPauseW_info(){
+function getP_info(){
     local info=""
     pic=$(php -f "$wallhavenPhp" f=wh_get "ws${workspace}_pause_id_$1" )
+    pic=$(basename "$pic")
     if [[ -z "$pic" ]]
         then
             info=""
-            printf '%-13s: %s\n' "getPauseW $1" "$info"
+            printf '%-10s: %s\n' "$1-getP" "$info"
             return
         else
             if (( $2 == 1 ))
                 then
                     info="***************"
-                    printf '%-13s: %s\n' "getPauseW $1" "$info"
+                    printf '%-10s: %s\n' "getP $1" "$info"
                     return
                 else
                     info="$pic"
                     str=$( php -f "$wallhavenPhp" f=getfavlistbyname "$pic" \
                         | sed '{s/^.*://g}'
                     )
-                    printf '%-13s: %s\n' "getPauseW $1" "$info"
+                    printf '%-10s: %s\n' "$1-getP" "$info"
                     while read -r s ; do
                         printf '\t\t - %s\n' "$s"
                     done <<< "$str"
                     return
             fi
     fi
-}
-
-function wsGetWP_info(){
-    return 0
 }
 
 function wDisable_info(){
@@ -1179,7 +1248,7 @@ function all_info(){
         f_info
         return
     }
-    [[ "$(pass_f)" == 0 ]] && {
+    (( $notexpired == 0 )) && [[ "$(pass_f)" == 0 ]] && {
         exit
         echo
     }
@@ -1193,16 +1262,27 @@ function all_info(){
     done
 }
 function print_url(){
-    id=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-    echo "https://wallhaven.cc/w/$id"
+    sname="ws${workspace}_web_id_${notexpired}"
+    squery=$(php -f "$wallhavenPhp" f=wh_get "$sname")
+    cname="ws${workspace}_web_c_${notexpired}"
+    c=$(php -f "$wallhavenPhp" f=wh_get "$cname")
+    url=$( "$wallhavenScript" "$c" "$squery" url )
+    echo "$url"
 }
 
+function cm_f(){
+    cm=$(wsgetMode)
+    modes_f|grep "$cm"
+    data=$(${cm}_info "$notexpired" 0 | cut -d: -f2)
+    data=${data:1}
+    echo "list: $data"
+}
 case "$1" in
      af|addfav)     addFav "$2"  ;;
     al|addlist)     addFAVLIST "$2" "$3" ;;
              c)     echo "$( _pic_ )" ; exit ;;
             cl)     cl=1 ;;
-            cm)     echo "$(wsgetMode)($notexpired)" ; exit ;;
+            cm)     cm_f ; exit ;;
            chl)     changeListName "$2" "$3" "$4" ;;
     d|download)     downloadit "$2" ;;
            dim)
@@ -1213,7 +1293,7 @@ case "$1" in
                     exit
                     ;;
            dir)     dirHandler ;;
-           fav)     changeFavList "$2" ;;
+           fav)     changeFavList "$2" "$3" ;;
          f|fix)     fix_m ;;
              g)     goto="$2"; goto=$((goto-1)) ;;
            get)    getData  ;;
@@ -1239,8 +1319,11 @@ case "$1" in
                     ;;
         p|pause)    setPauseValue "$2"  ;;
            r|rm)    rmFav ;;
-             sc)    set_ordered_c ;;
       sd|setdir)    setDir "$2" ;;
+            sdc)    set_dir_c  ;;
+            soc)    set_ordered_c  ;;
+            swc)    set_web_c  ;;
+            swi)    set_web_id "$2" ;;
             set)    saveData "$2" ;;
     sp|setpause)    setPauseW "$2" "$3" ;;
      sm|setmode)    wsSetMode "$2" "$3" ;;
@@ -1248,7 +1331,6 @@ case "$1" in
      u|unexpire)    unexpire ;;
             url)    print_url ; exit ;;
           wlist)    wlist_f "$2" ;;
-            wid)    set_web_id "$2" ;;
            zoom)
                     pic=$( _pic_ )
                     feh --bg-scale   "$pic" "$secondPIC"

@@ -369,8 +369,10 @@ function f_load(){
 
 function f_remove(){
     mode="$( f_mode )"
-    file="$( f_url )"
-    echo
+    if [[ -z "$1" ]]
+        then file="$( f_url )"
+        else file="${1//\\/}"
+    fi
     f_index
     echo "$file"
     f_title
@@ -481,7 +483,7 @@ case "$1" in
           playlists) f_playlists ;;
      n|playlistName) f_playlistName ;;
               a|add) f_addToList "$2" ;;
-           r|remove) f_remove  ;;
+           r|remove) f_remove "$2" ;;
                move) f_move  ;;
           saveTitle) f_saveTitle ;;
           saveIndex) f_saveIndex ;;
