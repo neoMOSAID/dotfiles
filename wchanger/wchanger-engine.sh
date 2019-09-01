@@ -7,7 +7,7 @@ if (( $is_running > 1 )) ; then
   exit 0
 fi
 
-wallhavenPhp="$(dirname $(realpath "$0") )/db.php"
+wallhavenP="$(dirname $(realpath "$0") )/wchangerDB.py"
 
 function getws () {
     lastWS=$(cat /tmp/my_i3_ws 2>/dev/null )
@@ -16,7 +16,7 @@ function getws () {
                 | jq -c '.[] |select(.focused)|.num' )
     if (( $lastWS != $currWS )) ; then
         echo "$currWS" > /tmp/my_i3_ws
-        php -f "$wallhavenPhp" f=wh_set "expired" "0"
+        python "$wallhavenP" wh_set "expired" "0"
         return "$currWS"
     fi
     return 0  #same ws

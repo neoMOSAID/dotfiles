@@ -1,6 +1,6 @@
 #!/bin/bash
 
-phpscript="$(dirname $(realpath "$0") )/db.php"
+wallhavenP="$(dirname $(realpath "$0") )/wchangerDB.py"
 logfile="/tmp/wchanger_wlog"
 tmpfile="/tmp/getwallhaven_tmpfile"
 desctmpfile="/tmp/getwallhaven_desc_tmpfile"
@@ -13,44 +13,77 @@ if (( $is_running > 2 )) ; then
     exit 0
 fi
 
+(( ${#@} <= 3 )) && {
+    >&2 echo "program requires at least 3 args"
+    exit
+}
+
+arg_1="$1"          #[sdm],g,adddesc
+arg_2="$2"          #squery
+arg_3="$3"          #bulk,url,tags
+arg_4="$4"          #quiet,verbose
+arg_5="$5"          #page number
+arg_6="$6"          #force
+
 APIKEY="$(cat "$(dirname $(realpath "$0") )/apikey" )"
 httpHeader="X-API-Key: $APIKEY"
 
-#$1 category :m,d,md,s...
-#$2 squery
-#$3 url
+function gettags(){
+    [[ "$arg_4" == "verbose" ]] && >&2 echo "getting tags..."
+    l=$(cat "$tmpfile" | jq -r ".data.tags|length")
+    [[ -z "$l" ]] && return
+    for (( i=0 ; i< $l ; i++ )) ; do
+        id=$(cat "$tmpfile" | jq -r ".data.tags[$i].id")
+        name=$(cat "$tmpfile" | jq -r ".data.tags[$i].name")
+        alias=$(cat "$tmpfile" | jq -r ".data.tags[$i].alias")
+        purity=$(cat "$tmpfile" | jq -r ".data.tags[$i].purity")
+        case "$purity" in
+            sfw) mycategory=d ;;
+            nsfw) mycategory=s ;;
+            sketchy) mycategory=m ;;
+        esac
+        >&2 echo "$name"
+        python "$wallhavenP" adddesc "$id" "$name" "$alias" "$mycategory"
+        python "$wallhavenP" addwtag "$id" "$arg_2"
+    done
+}
+
 function init_f(){
-    case "$1" in
+    case "$arg_1" in
         d) FILTER=100 ;;
         m) FILTER=010 ;;
         s) FILTER=001 ;;
-       sm) FILTER=011 ;;
-       sd) FILTER=101 ;;
-       dm) FILTER=110 ;;
+    sm|ms) FILTER=011 ;;
+    sd|ds) FILTER=101 ;;
+    dm|md) FILTER=110 ;;
+    dsm|dms|mds|msd|smd|sdm) FILTER=111 ;;
     esac
-    LOCATION="${HOME}/Pictures/wallhaven/.ind/s-333/"
-    [[ "$1" == g ]] && LOCATION="${HOME}/Pictures/wallhaven/.ind/fetched/"
-    [[ "$1" == d ]] && LOCATION="${HOME}/Pictures/wallhaven/d-333/"
+    LOCATION="${HOME}/Pictures/wallhaven/.ind/s-444/"
+    [[ "$arg_1" == g ]] && LOCATION="${HOME}/Pictures/wallhaven/.ind/fetched/"
+    [[ "$arg_1" == d ]] && LOCATION="${HOME}/Pictures/wallhaven/d-333/"
 
-    [[ "$1" != "g" ]] && LOCATION+="$2"
+    [[ "$arg_1" != "g" ]] && LOCATION+="$arg_2"
+    DELETEDLOCATION="${LOCATION}-deleted"
     [[ ! -d "$LOCATION" ]] && mkdir -p "$LOCATION"
     cd "$LOCATION" || exit
 
     number='^[0-9]+$'
-    if [[ "$2" =~ $number ]]
-        then squery="id:$2"
-        else squery=$2
+    if [[ "$arg_2" =~ $number ]]
+        then squery="id:$arg_2"
+        else squery=$arg_2
     fi
-    if [[ "$1" == "g" ]]
+    if [[ "$arg_1" == "g" ]]
         then
-            #>&2 echo "fetching $2"
+            [[ "$arg_4" == "verbose" ]] && >&2 echo "fetching $arg_2"
             rm -f "$tmpfile" 2>/dev/null
-            wget -c -q -O "$tmpfile" --header="$httpHeader" "$wAPI/w/$2"
+            wget -c -q -O "$tmpfile" --header="$httpHeader" "$wAPI/w/$arg_2"
+            gettags
+            [[ "$arg_3" == tags ]] && exit
         else
-            #>&2 echo "searching $2"
+            [[ "$arg_4" == "verbose" ]] && >&2 echo "searching $arg_2"
             s1="search?page=1&categories=101&purity=$FILTER&"
             s1+="sorting=random&order=desc&q=$squery"
-            [[ "$3" == url ]] && {
+            [[ "$arg_3" == url ]] && {
                 echo "https://wallhaven.cc/$s1"
                 exit
             }
@@ -61,105 +94,115 @@ function init_f(){
 }
 
 function downloadit_f(){
-    if [[ "$(php -f "$phpscript" f=downloaded "$imgID" )" == "0" ]]
-        then
-            wget -c -q "$imgURL"
-            if [[ -f "$PWD/$imgNAME" ]] ; then
-                touch "$PWD/$imgNAME"
-                echo "$PWD/$imgNAME"
-                >&2 echo "$imgNAME: new"
-            fi
-            php -f "$phpscript" f=add "$imgID" "${PWD##*/}" "$PWD/$imgNAME"
-            echo "new" >| "$logfile"
-        else
-            if [[ ! -z "$imgID" ]]
-                then
-                    #>&2 echo "$imgID : already downloaded"
-                    echo "already downloaded" >| "$logfile"
-                    php -f "$phpscript" f=get "$imgID"
-                else
-                    >&2 echo "no data"
-                    #>&2 echo "$wAPI/$s1"
-            fi
+    wget -c -q "$imgURL"
+    if [[ -f "$PWD/$imgNAME" ]] ; then
+        touch "$PWD/$imgNAME"
+        echo "$PWD/$imgNAME"
+        [[ "$arg_4" == "verbose" ]] && >&2 echo "$imgNAME: new"
     fi
+    python "$wallhavenP" add "$imgID" "${PWD##*/}" "$PWD/$imgNAME"
+    echo "new" >| "$logfile"
     case "$purity" in
-            sfw) mycategory=d ;;
-           nsfw) mycategory=s ;;
+        sfw) mycategory=d ;;
+        nsfw) mycategory=s ;;
         sketchy) mycategory=m ;;
     esac
-    php -f "$phpscript" f=fixcategory "$imgID" "$mycategory"
-    #>&2 echo "$imgID : category $mycategory, $purity"
+    python "$wallhavenP" fixcategory "$imgID" "$mycategory"
 }
 
+function getFile_f(){
+    downloaded="$(python "$wallhavenP" downloaded "$imgID" )"
+    if (( $downloaded == 1 ))
+        then
+            FILE="$(python "$wallhavenP" get "$imgID" )"
+            if [[ "$arg_6" == force ]] && [[ ! -f "$FILE" ]] ; then
+                LOCATION="$DELETEDLOCATION"
+                [[ ! -d "$DELETEDLOCATION" ]] && mkdir -p "$DELETEDLOCATION"
+                cd "$DELETEDLOCATION" || exit
+                FILE=$(downloadit_f)
+            fi
+        else
+            FILE=$(downloadit_f)
+    fi
+    echo "$FILE"
+}
+
+
 function adddesc_f(){
-    tag=$1
-    #>&2  echo "adding tag..."
+    tag=$arg_2
+    [[ "$arg_4" == "verbose" ]] && >&2  echo "adding tag..."
     rm -f "$desctmpfile" 2>/dev/null
     wget -c -q -O "$desctmpfile" --header="$httpHeader" "$wAPI/tag/$tag"
-    [[ "$2" == v ]] && {
+    [[ "$arg_4" == debug ]] && {
         cat "$desctmpfile"
         exit
     }
     name=$(cat "$desctmpfile" | jq -r ".data.name" 2>/dev/null )
     alias=$(cat "$desctmpfile" | jq -r ".data.alias" 2>/dev/null )
+    purity=$(cat "$desctmpfile" | jq -r ".data.purity" 2>/dev/null )
+    case "$purity" in
+        sfw) mycategory=d ;;
+        nsfw) mycategory=s ;;
+        sketchy) mycategory=m ;;
+    esac
     [[ -z "$name" ]] && {
-        >&2 echo "Error: empty tag"
+        [[ "$arg_4" == "verbose" ]] && >&2 echo "Error: empty tag"
         exit
     }
-    php -f "$phpscript" f=adddesc "$tag" "$name" "$alias"
+    python "$wallhavenP" adddesc "$tag" "$name" "$alias" "$mycategory"
 }
 
-function settings_f(){
-    rm -f "$tmpfile" 2>/dev/null
-    wget -c -q -O "$tmpfile" --header="$httpHeader" "$wAPIsettings?$APIKEY"
-    #php -f "$phpscript" f=adddesc "$2" "$desc" >/dev/null 2>&1
-    cat "$tmpfile" | python -m json.tool
-}
-
-[[ "$1" == "adddesc" ]] && {
-    #number='^[0-9]+$'
-    #if [[ "$2" =~ $number ]]
-    #    then adddesc_f "$2" "$3"
-    #    else >&2 echo "$2 not an id"
-    #fi
-    adddesc_f "$2" "$3"
+[[ "$arg_1" == "adddesc" ]] && {
+    number='^[0-9]+$'
+    if [[ "$arg_2" =~ $number ]]
+        then
+            adddesc_f
+        else
+            [[ "$arg_4" == "verbose" ]] && >&2 echo "$arg_2 not a tag id"
+    fi
     exit
 }
 
 init_f  "$@"
 
-case "$1" in
-        g)
-            imgURL=$(jq -r ".data.path" "$tmpfile" )
-            imgNAME="$(basename "$imgURL")"
-            imgID=$(jq -r ".data.id" "$tmpfile" )
-            purity=$(jq -r ".data.purity" "$tmpfile" )
-            downloadit_f ;;
-        *)
-            if [[ "$3" == "bulk" ]]
-                then
-                    lastpage=$(jq -r ".meta.last_page" "$tmpfile" )
-                    for (( i=1;i<=$lastpage; i++ )) ; do
-                        s1="search?page=$i&categories=101&purity=$FILTER&"
-                        s1+="sorting=date_added&order=desc&q=$2"
-                        echo "page $i/$lastpage"
-                        rm -f "$tmpfile" 2>/dev/null
-                        wget -c -q -O "$tmpfile" --header="$httpHeader" "$wAPI$s1"
-                        for (( j=1 ; j<=24; j++ )) ; do
-                            imgURL=$(jq -r ".data[$j].path" "$tmpfile" )
-                            imgID=$(jq -r ".data[$j].id" "$tmpfile" )
-                            purity=$(jq -r ".data[$j].purity" "$tmpfile" )
-                            imgNAME="$(basename "$imgURL")"
-                            downloadit_f
-                        done
-                    done
-                else
-                    imgURL=$(jq -r ".data[1].path" "$tmpfile" )
-                    imgID=$(jq -r ".data[1].id" "$tmpfile" )
-                    purity=$(jq -r ".data[1].purity" "$tmpfile" )
-                    imgNAME="$(basename "$imgURL")"
-                    downloadit_f
-            fi
-esac
+[[ "$arg_1" == g ]] && {
+    imgURL=$(jq -r ".data.path" "$tmpfile" )
+    imgNAME="$(basename "$imgURL")"
+    imgID=$(jq -r ".data.id" "$tmpfile" )
+    purity=$(jq -r ".data.purity" "$tmpfile" )
+    getFile_f
+    exit
+}
 
+if [[ "$arg_3" == "bulk" ]]
+    then
+        lastpage=$(jq -r ".meta.last_page" "$tmpfile" )
+        if [[ -z "$arg_5" ]] ; then
+            arg_5=1
+        fi
+        for (( i=$arg_5 ; i<=$lastpage ; i++ )) ; do
+            s1="search?page=$i&categories=101&purity=$FILTER&"
+            s1+="sorting=date_added&order=desc&q=$squery"
+            echo "page $i/$lastpage"
+            rm -f "$tmpfile" 2>/dev/null
+            wget -c -q -O "$tmpfile" --header="$httpHeader" "$wAPI/$s1"
+            N=$(jq -r ".data|length" "$tmpfile" )
+            for (( j=0 ; j < $N ; j++ )) ; do
+                echo "      $((j+1))/$N"
+                echo -en "\e[1A"
+                imgURL=$(jq -r ".data[$j].path" "$tmpfile" )
+                imgID=$(jq -r ".data[$j].id" "$tmpfile" )
+                purity=$(jq -r ".data[$j].purity" "$tmpfile" )
+                imgNAME="$(basename "$imgURL")"
+                getFile_f
+            done
+            echo
+        done
+    else
+        imgURL=$(jq -r ".data[0].path" "$tmpfile" )
+        imgID=$(jq -r ".data[0].id" "$tmpfile" )
+        purity=$(jq -r ".data[0].purity" "$tmpfile" )
+        imgNAME="$(basename "$imgURL")"
+        getFile_f
+fi
 

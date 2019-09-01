@@ -8,6 +8,7 @@ if (( code == 0 )) ; then
     exit
 fi
 
+[[ -z $BLOCK_BUTTON ]] && BLOCK_BUTTON=0
 if (( "$BLOCK_BUTTON" == 1 )) ; then
     notify-send "getting weather data..."
     pkill -RTMIN+8 i3blocks
@@ -36,7 +37,5 @@ city="$( echo "$data" | jq '.name' | sed 's/-Morocco//' |sed 's/"//g' )"
 temp="$( echo "$data" | jq '.temp' | sed 's/-Morocco//' |sed 's/"//g' )"
 
 echo $city $temp°C
-echo
-echo "#b6fcd5"
 
 
