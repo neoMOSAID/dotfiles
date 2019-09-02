@@ -76,7 +76,51 @@ function update_f(){
     exit
 }
 
+function getP(){
+    id=$(python "$wallhavenP" wh_get "ws${workspace}_pause_id_$notexpired" )
+    if [[ -z "$id" ]] ; then
+        >&2 echo "pause wallpaper id undefined "
+        >&2 echo "first use? run : $(basename $0) sp "
+        exit
+    fi
+    pic=$(python "$wallhavenP" get "$id" )
+    [[ -z "$pic" ]] && pic=$id
+    if (( $cl == 1 )) ; then
+        echo "pause : $pic"
+        exit
+    fi
+    if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null`
+    then
+        feh --bg-max   "$pic" "$secondPIC"
+    else
+        echo "$(date '+%Y-%m-%d-%H:%M:%S'):$pic" >> "$errlog"
+        >&2 echo "error file : $pic"
+    fi
+    exit
+}
 
+function setPauseValue(){
+    ! [[ -z "$1" ]] && [[ "$1" != "f" ]] && workspace=$1
+    pause=$(
+        python "$wallhavenP" wh_get "ws${workspace}_pause_$notexpired"
+    )
+    [[ -z "$pause" ]] && pause=0
+    if (( $pause == 0 ))
+    then
+        pause=1
+        msg="DISABLED"
+    else
+        pause=0
+        msg="ENABLED"
+    fi
+    python "$wallhavenP" wh_set "ws${workspace}_pause_$notexpired"  "$pause"
+    message="wallpaper changing is <b>$msg</b> for workspace $workspace"
+    echo "$msg"
+    dunstify -u normal -r "$msgId" "wallpaper changer" "$message"
+    ((pause ==1 )) && getP
+}
+
+[[ "$1" == "p" ]] && setPauseValue
 [[ "$1" == "x" ]] && _x_
 [[ "$1" == "updatedb" ]] && update_f "$2"
 
@@ -93,6 +137,7 @@ function modes_f(){
     echo "getLD :local dir (not wallhaven)"
     echo "getwW :web or offline ( by search tag)"
     echo "getOr :all available wallpapers (by category)"
+    echo "getWT :wallpapers by tags"
     echo "getP :a single unchanging wallpaper"
     echo "wDisable : disable wallpaper changer"
 }
@@ -116,7 +161,7 @@ function _printhelp () {
 function f_help(){
    printf '\033[01;33m'
    echo "
-   multi layred wallpaper changer for i3wm powered by a mysql database,
+   multi layred wallpaper changer for i3wm
    each workspace can have up to 8 states,
    with two modes ( default and password protected mode)
    features include (for each workspace ):
@@ -546,28 +591,6 @@ function getDwall () {
 	echo "$n" >| "$1/.wcount"
 }
 
-function getP(){
-    id=$(python "$wallhavenP" wh_get "ws${workspace}_pause_id_$notexpired" )
-    if [[ -z "$id" ]] ; then
-        >&2 echo "pause wallpaper id undefined "
-        >&2 echo "first use? run : $(basename $0) sp "
-        exit
-    fi
-    pic=$(python "$wallhavenP" get "$id" )
-    [[ -z "$pic" ]] && pic=$id
-    if (( $cl == 1 )) ; then
-        echo "pause : $pic"
-        exit
-    fi
-    if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null`
-        then
-            feh --bg-max   "$pic" "$secondPIC"
-        else
-            echo "$(date '+%Y-%m-%d-%H:%M:%S'):$pic" >> "$errlog"
-            >&2 echo "error file : $pic"
-    fi
-    exit
-}
 
 function getFav(){
     pause=$(
@@ -935,25 +958,6 @@ function wlist_f (){
     exit
 }
 
-function setPauseValue(){
-    ! [[ -z "$1" ]] && [[ "$1" != "f" ]] && workspace=$1
-    pause=$(
-        python "$wallhavenP" wh_get "ws${workspace}_pause_$notexpired"
-    )
-    [[ -z "$pause" ]] && pause=0
-    if (( $pause == 0 ))
-    then
-        pause=1
-        msg="DISABLED"
-    else
-        pause=0
-        msg="ENABLED"
-    fi
-    python "$wallhavenP" wh_set "ws${workspace}_pause_$notexpired"  "$pause"
-    message="wallpaper changing is <b>$msg</b> for workspace $workspace"
-    echo "$msg"
-    dunstify -u normal -r "$msgId" "wallpaper changer" "$message"
-}
 
 function downloadit(){
     [[ -z "$1" ]] && getwW d
@@ -1142,6 +1146,81 @@ function getDir(){
     exit
 }
 
+function set_tag_c(){
+    name="ws${workspace}_tags_c_${notexpired}"
+    c=$(printf "d\nm\ns" \
+        |rofi -i -dmenu -p "set $name" -width -40
+    )
+    [[ -z "$c" ]] && exit
+    (( $notexpired == 0 )) && [[ "$c" == s ]] && {
+        dunstify -u normal -r "$msgId" "wallpaper changer" "not permitted"
+        exit
+    }
+    python "$wallhavenP" wh_set "$name" "$c"
+}
+
+function getWT(){
+    name="ws${workspace}_tag_${notexpired}"
+    name2="ws${workspace}_tags_i_${notexpired}"
+    name3="ws${workspace}_tags_c_${notexpired}"
+    pause=$(
+        python "$wallhavenP" wh_get "ws${workspace}_pause_$notexpired"
+    )
+    if [[ -z "$pause" ]]
+        then
+            >&2 echo "pause value not set"
+            >&2 echo "first use ? run : $(basename $0) p"
+        else
+            (( $pause == 1 )) && getP
+    fi
+    c=$(python "$wallhavenP" wh_get "$name3" )
+    if [[ -z "$c" ]] ; then
+        >&2 echo "category not set"
+        >&2 echo "first use ? run : $(basename $0) stc"
+        exit
+    fi
+    if (( $cl == 1 )) ; then
+        echo "tags:"
+        getwstags
+        exit
+    fi
+    N=$( python "$wallhavenP" getwstagswp  "$name" "$c" -1 50000 )
+    [[ -z "$N" ]] && {
+        echo "no matching wallpapers for tags:"
+        getwstags
+        exit
+    }
+    id=$(python "$wallhavenP" wh_get "$name2" )
+    id=$((id+goto))
+    case "$1" in
+        ""|+) id=$((id+1)) ;;
+        -) id=$((id-1)) ;;
+        *)
+            number='^[0-9]+$'
+            if [[ "$1" =~ $number ]]
+                then id=$1
+            fi
+    esac
+    [[ -z "$id" ]] && id=0
+    if (( $id > $N )) ; then id=0 ; fi
+    if (( $id < 0 )) ; then id=$N ; fi
+    id=$((id+0))
+    pic="$(python "$wallhavenP" getwstagswp  "$name" "$c" $id 1 )"
+    python "$wallhavenP" wh_set "$name2"  "$id"
+    echo "$id/$N"
+    echo "$id/$N" >| /tmp/wchanger_wlog
+    if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
+            feh --bg-max   "$pic" "$secondPIC"
+        else
+            echo "$(date '+%Y-%m-%d-%H:%M:%S'):$pic" >> "$errlog"
+            pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+            >&2 echo "error file : $pic"
+    fi
+    picID=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    "$wallhavenScript" g "$picID" "tags" verbose "" ""
+    exit
+}
+
 function f_keys(){
     cat ~/.i3/config | grep ^binds | grep wchanger \
     | sed 's/bindsym//g;
@@ -1182,6 +1261,19 @@ function getwW_info(){
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
     printf '%-10s: %s\n' "$1-getwW" "$info"
+}
+
+function getWT_info(){
+    info=$(
+        while read -r s ; do
+            ! [[ -z "$s" ]] && printf '\t\t - %s\n' "$s"
+        done <<< "$(getwstags)"
+    )
+    if [[ ! -z "$info" ]] ; then
+            info=$(echo;echo "$info")
+            (( $2 == 1 )) && info="***************"
+    fi
+    printf '%-10s: %s\n' "$1-getWT" "$info"
 }
 
 function getOr_info(){
@@ -1335,6 +1427,50 @@ function list_tags(){
         [[ "$category" == s ]] && printf '\033[1;31m'
         printf '%s\n' "$name"
     done<<< "$(python "$wallhavenP" gettags "$c" )"
+}
+
+function getwstags(){
+    name="ws${workspace}_tag_${notexpired}"
+    tags=$(
+        for t in `python "$wallhavenP" getwstags "$name" ` ; do
+            python "$wallhavenP" gettagname "$t"
+        done |sort
+    )
+    echo "$tags"
+}
+
+function addwsTag(){
+    name="ws${workspace}_tag_${notexpired}"
+    if [[ -z  "$1" ]]
+    then c='*'
+    else c=$1
+    fi
+    if (( $notexpired == 0 )) && [[ "$c" != d ]] ; then
+        (( $( pass_f) == 1 )) || {
+            echo
+            exit
+        }
+        echo
+    fi
+    ans=$(
+        python "$wallhavenP" gettags "$c" \
+        |cut -d: -f2 |sort\
+        |rofi -i -dmenu -p "select tag to add" -width -80
+    )
+    [[ -z "$ans" ]] && exit
+    tag=$( python "$wallhavenP" gettagid "$ans" )
+    python "$wallhavenP" addwstag "$name" "$tag"
+    exit
+}
+
+function rwstags(){
+    name="ws${workspace}_tag_${notexpired}"
+    msg="select tag to remove"
+    ans=$(getwstags|rofi -i -dmenu -p "$msg" -width -80)
+    [[ -z "$ans" ]] && exit
+    tag=$(python "$wallhavenP" gettagid "$ans")
+    echo removing tag...
+    python "$wallhavenP" rmwstag "$name" "$tag"
     exit
 }
 
@@ -1378,17 +1514,19 @@ case "$1" in
                     firefox "https://wallhaven.cc/w/$pic" & disown
                     exit
                     ;;
-        p|pause)    setPauseValue "$2"  ;;
            r|rm)    rmFav ;;
+            rwt)    rwstags ;;
       sd|setdir)    setDir "$2" ;;
             sdc)    set_dir_c  ;;
             soc)    set_ordered_c  ;;
             swc)    set_web_c  ;;
+            stc)    set_tag_c  ;;
             swi)    set_web_id "$2" ;;
+            swt)    addwsTag "$2" ;;
             set)    saveData "$2" ;;
     sp|setpause)    setPauseW "$2" "$3" ;;
      sm|setmode)    wsSetMode "$2" "$3" ;;
-         t|tags)    list_tags "$2" ;;
+         t|tags)    list_tags "$2" ; exit ;;
   up|unsetpause)    UnsetPauseW "$2" "$3" ;;
      u|unexpire)    unexpire ;;
             url)    print_url ;;

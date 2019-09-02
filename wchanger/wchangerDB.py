@@ -71,6 +71,10 @@ def createDB():
     name text  NOT NULL UNIQUE default "",
     value text NOT NULL default "0"
     ) """)
+    c.execute("""CREATE TABLE IF NOT EXISTS
+        wsTags(name text, tag integer ) """)
+    c.execute(""" CREATE UNIQUE INDEX IF NOT EXISTS
+        wstag ON wsTags (name,tag) """)
     con.commit()
     c.close()
     con.close()
@@ -273,6 +277,40 @@ def addWTAG(tag, wallpaper):
             con.close()
 
 
+def addWSTAG(name, tag):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""
+        INSERT OR IGNORE INTO wsTags (name,tag)
+        VALUES("{n}","{t}")
+        """ .format(n=name, t=tag))
+        con.commit()
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
+def rmWSTAG(name, tag):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""
+        DELETE from wsTags where
+        name="{n}" and tag="{t}"
+        """ .format(n=name, t=tag))
+        con.commit()
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
 def addFav(fid, name):
     try:
         con = connectDB()
@@ -377,6 +415,28 @@ def getFavName(mid):
             con.close()
 
 
+def getWSTAGS_f(name):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute(""" select tag from wsTags where
+        name="{n}" """ .format(n=name))
+        rows = c.fetchall()
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+    return tuple(r[0] for r in rows)
+
+
+def getWSTAGS(name):
+    rows = getWSTAGS_f(name)
+    for row in rows:
+        print(row)
+
+
 def getFavList(category):
     try:
         con = connectDB()
@@ -454,7 +514,7 @@ def getALL():
         con = connectDB()
         c = con.cursor()
         c.execute(""" select path from downloaded
-        where path IS NOT NULL
+        where path <> ""
         ORDER BY path asc; """)
         rows = c.fetchall()
         for row in rows:
@@ -800,7 +860,7 @@ def getOredered(category, index, n):
         inner join categories t2
         on t2.name = t1.name
         {w}
-        ORDER BY t1.id
+        ORDER BY t1.id desc
         LIMIT {i},{n}
          """ .format(w=where, i=index, n=n))
         rows = c.fetchall()
@@ -940,6 +1000,45 @@ def getTagID(name):
             con.close()
 
 
+def getWSTAGSWP(name, category, index, n):
+    tags = tuple(getWSTAGS_f(name))
+    length = len(tags)
+    count = 0
+    index = int(index)
+    if (length <= 1):
+        return
+    if (index < 0):
+        index = 0
+        count = -1
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""
+                  select t1.path from downloaded t1
+                  inner join categories t2
+                  on t1.name = t2.name
+                  where t1.name in
+                  (
+                    select wallpaper from wTags where tag in {t}
+                    GROUP BY wallpaper having count(*) >= {ll}
+                  )
+                  and t2.category = "{c}"
+                  LIMIT {i},{n}
+                  """ .format(t=tags, ll=length, i=index, n=n, c=category))
+        rows = c.fetchall()
+        if(count == -1):
+            print(len(rows))
+        else:
+            for row in rows:
+                print(row[0])
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
 def getTagName(tag):
     try:
         con = connectDB()
@@ -1018,7 +1117,11 @@ def myfuncSwitch(arg):
         "gettags": getTags,
         "addwtag": addWTAG,
         "addpass": addPass,
-        "updatepaths": updatePaths
+        "updatepaths": updatePaths,
+        "addwstag": addWSTAG,
+        "getwstags": getWSTAGS,
+        "getwstagswp": getWSTAGSWP,
+        "rmwstag": rmWSTAG
     }
     func = switcher.get(cmd)
     func(*arg[2:])

@@ -42,7 +42,7 @@ function gettags(){
             nsfw) mycategory=s ;;
             sketchy) mycategory=m ;;
         esac
-        >&2 echo "$name"
+        #>&2 echo "$name"
         python "$wallhavenP" adddesc "$id" "$name" "$alias" "$mycategory"
         python "$wallhavenP" addwtag "$id" "$arg_2"
     done
