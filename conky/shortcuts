@@ -71,7 +71,7 @@ control+less${goto 230} ws.sh ++
 control+shift+less${goto 230} ws.sh --
 ALT+g${goto 230} wchanger.sh x
 ALT+h${goto 230} wchanger.sh dir
-ALT+j${goto 230} wchanger.sh setdir
+ALT+j${goto 230} wchanger.sh p
 ALT+k${goto 230} wchanger.sh fav
 ALT+l${goto 230} wchanger.sh fav
 ALT+m${goto 230} wchanger.sh u
@@ -82,6 +82,6 @@ ALT+exclam${goto 230} wchanger.sh list
 ALT+ugrave${goto 230} wchanger.sh af
 ALT+asterisk${goto 230} wchanger.sh rm
 ALT+dead_circumflex${goto 230} wchanger.sh setmode
-ALT+dollar${goto 230} wchanger.sh pause
+ALT+dollar${goto 230} wchanger.sh setdir
 ${endif}
 ${endif}

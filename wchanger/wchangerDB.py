@@ -30,12 +30,12 @@ def createDB():
     password text  NOT NULL default ""
     );""")
     c.execute("""CREATE TABLE IF NOT EXISTS downloaded(
-    id INTEGER PRIMARY KEY AUTOINCREMENT ,
+    id INTEGER PRIMARY KEY  ,
     name text  NOT NULL UNIQUE,
     dir text,
     path text );""")
     c.execute("""CREATE TABLE IF NOT EXISTS wtags(
-    id INTEGER PRIMARY KEY AUTOINCREMENT ,
+    id INTEGER PRIMARY KEY  ,
     tag integer  NOT NULL,
     wallpaper text NOT NULL
     );""")
@@ -43,19 +43,19 @@ def createDB():
     tagWallpaper ON wtags (tag,wallpaper)
     """)
     c.execute("""CREATE TABLE IF NOT EXISTS categories(
-    id INTEGER PRIMARY KEY AUTOINCREMENT ,
+    id INTEGER PRIMARY KEY  ,
     name text  NOT NULL UNIQUE,
     category text NOT NULL DEFAULT "s"
     );""")
     c.execute("""CREATE TABLE IF NOT EXISTS tags(
-    id INTEGER PRIMARY KEY AUTOINCREMENT ,
+    id INTEGER PRIMARY KEY  ,
     tag integer  NOT NULL UNIQUE ,
     name text NOT NULL ,
     alias text NOT NULL DEFAULT "",
     category text NOT NULL DEFAULT ""
     ) """)
     c.execute("""CREATE TABLE IF NOT EXISTS favs(
-    id INTEGER PRIMARY KEY AUTOINCREMENT ,
+    id INTEGER PRIMARY KEY  ,
     fid integer NOT NULL,
     name text  NOT NULL
     );""")
@@ -63,7 +63,7 @@ def createDB():
     fidname ON favs (fid,name)
     """)
     c.execute("""CREATE TABLE IF NOT EXISTS favslist(
-    id INTEGER PRIMARY KEY AUTOINCREMENT ,
+    id INTEGER PRIMARY KEY  ,
     name text  NOT NULL UNIQUE,
     category text NOT NULL DEFAULT "s"
     ) """)
@@ -116,8 +116,8 @@ def addPass(user, passw):
 
 def check_password(hashed_password, user_password):
     password, salt = hashed_password.split(":")
-    return password == hashlib.sha256(salt.encode() +
-                                      user_password.encode()).hexdigest()
+    upass = hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
+    return password == upass
 
 
 def authenticate(user, password):
@@ -149,9 +149,11 @@ def updatePaths():
         with open('/tmp/wchanger_update_file.csv') as ifile:
             reader = csv.reader(ifile)
             for field in reader:
-                c.execute(""" INSERT OR IGNORE INTO
-                downloaded (name,dir,path)
-                VALUES (?,?,?);""", field)
+                c.execute(""" INSERT INTO downloaded (name,dir,path)
+                VALUES ("{n}", "{d}", "{p}" )
+                ON CONFLICT(name) DO UPDATE SET
+                dir="{d}" , path="{p}" ;
+                """.format(n=field[0], d=field[1], p=field[2]))
         con.commit()
         c.close()
     except sqlite3.Error as error:
@@ -196,44 +198,6 @@ def getAllFavs():
             con.close()
 
 
-#
-# def test0():
-#     try:
-#         con = connectDB()
-#         c = con.cursor()
-#         c.execute("""update categories set category="d"
-#         where name in (
-#             select t2.name from downloaded t1
-#             left join categories t2  on t1.name = t2.name
-#             where category = "x" and t1.path <> "deleted"
-#         ); """)
-#         rows = c.fetchall()
-#         for row in rows:
-#             print(row[0])
-#     except Error:
-#         print("Failed to read data from sqlite table", Error)
-#     finally:
-#         if (con):
-#             con.close()
-#
-#
-# def test1(){
-#     mysqli = connectDB()
-#     c.execute("""
-#     select t2.name from downloaded t1
-#     left join categories t2  on t1.name = t2.name
-#     where category = "x" and t1.path <> "deleted"
-#     """)
-#     if(! result = mysqli->query(query)){
-#         print("@%s: %s\n",__def__, mysqli->Error )
-#         exit()
-#
-#     while ( row = result->fetch_array(MYSQLI_NUM) ) {
-#         print(row[0])
-#
-#     mysqli->close()
-#
-
 def wHistory_get(name):
     try:
         con = connectDB()
@@ -251,14 +215,6 @@ def wHistory_get(name):
         if (con):
             con.close()
 
-
-# def resetDB(){
-#     mysqli = connectDB()
-#     if (mysqli->query("drop table downloaded")) {
-#         createDB()
-#     else echo "Error:""")
-#     mysqli->close()
-#
 
 def addWTAG(tag, wallpaper):
     try:
@@ -285,6 +241,23 @@ def addWSTAG(name, tag):
         INSERT OR IGNORE INTO wsTags (name,tag)
         VALUES("{n}","{t}")
         """ .format(n=name, t=tag))
+        con.commit()
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
+def rmWTAG(tag, wallpaper):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""
+                  DELETE from wtags where
+                  wallpaper="{w}" and tag="{t}"
+                  """ .format(w=wallpaper, t=tag))
         con.commit()
         c.close()
     except sqlite3.Error as error:
@@ -784,8 +757,6 @@ def getDir(mdir, category, index, n):
         con = connectDB()
         c = con.cursor()
         index = int(index)
-        if (index >= 1):
-            index = index - 1
         where = where_c(category)
         c.execute(""" select path from downloaded t1
         inner join categories t2
@@ -886,6 +857,29 @@ def getFavListByName(name):
         for row in rows:
             print("%s:%s" % (row[0], row[1]))
         c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
+def getTagsLike(category, pattern):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        where = where_c(category)
+        if (where == ""):
+            where = """where name like "%{p}%" """.format(p=pattern)
+        else:
+            where += """and name like "%{p}%" """.format(p=pattern)
+        c.execute("""select tag,name,category from tags
+                     {where}
+                  order by tag asc """ .format(where=where, p=pattern))
+        rows = c.fetchall()
+        for row in rows:
+            print("%s:%s:%s" % (row[0], row[1], row[2]))
+            c.close()
     except sqlite3.Error as error:
         eprint("@%s: %s" % (inspect.stack()[0][3], error))
     finally:
@@ -1000,37 +994,81 @@ def getTagID(name):
             con.close()
 
 
-def getWSTAGSWP(name, category, index, n):
+def getWSTAGSWP(name, ct, index, n, o="AND"):
     tags = tuple(getWSTAGS_f(name))
     length = len(tags)
     count = 0
     index = int(index)
-    if (length <= 1):
+    if (length < 1):
         return
+    if (length == 1):
+        tags = """({t})""".format(t=tags[0])
     if (index < 0):
         index = 0
         count = -1
+    where = ""
+    if (ct == "d" or ct == "x" or ct == "s" or ct == "m"):
+        where = """ t2.category="{c}" """.format(c=ct)
+    if (ct == "ms" or ct == "sm"):
+        where = """ ( t2.category="s" or t2.category= "m" ) """
+    if (ct == "md" or ct == "dm"):
+        where = """ ( t2.category="d" or t2.category= "m" ) """
+    query = """
+    select t1.path from downloaded t1
+    inner join categories t2
+    on t1.name = t2.name
+    where t1.name in
+    (
+    select wallpaper from wTags where tag in {t}
+    GROUP BY wallpaper having count(*) >= {ll}
+    )
+    and {c}
+    LIMIT {i},{n}
+    """ .format(t=tags, ll=length, i=index, n=n, c=where)
+    if (o == "OR"):
+        query = """
+        select t1.path from downloaded t1
+        inner join categories t2
+        on t1.name = t2.name
+        where t1.name in
+        (
+            select DISTINCT wallpaper from wTags where tag in {t}
+        )
+        and {c}
+        LIMIT {i},{n}
+        """ .format(t=tags, ll=length, i=index, n=n, c=where)
+
     try:
         con = connectDB()
         c = con.cursor()
-        c.execute("""
-                  select t1.path from downloaded t1
-                  inner join categories t2
-                  on t1.name = t2.name
-                  where t1.name in
-                  (
-                    select wallpaper from wTags where tag in {t}
-                    GROUP BY wallpaper having count(*) >= {ll}
-                  )
-                  and t2.category = "{c}"
-                  LIMIT {i},{n}
-                  """ .format(t=tags, ll=length, i=index, n=n, c=category))
+        c.execute(query)
         rows = c.fetchall()
         if(count == -1):
             print(len(rows))
         else:
             for row in rows:
                 print(row[0])
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
+def unTAGGed():
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""select t1.path from downloaded t1
+        left join wtags t2
+        on t1.name = t2.wallpaper
+        WHERE t2.id IS NULL and t1.path <> ""
+        """)
+        # and  printf("%d", t1.name) <> t1.name ;
+        rows = c.fetchall()
+        for row in rows:
+            print(row[0])
         c.close()
     except sqlite3.Error as error:
         eprint("@%s: %s" % (inspect.stack()[0][3], error))
@@ -1047,6 +1085,23 @@ def getTagName(tag):
          """ .format(tag=tag))
         row = c.fetchone()
         if(row):
+            print(row[0])
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
+def wallpaperTags(wallpaper):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""select tag from wtags where wallpaper="{w}"
+                  """ .format(w=wallpaper))
+        rows = c.fetchall()
+        for row in rows:
             print(row[0])
         c.close()
     except sqlite3.Error as error:
@@ -1115,13 +1170,17 @@ def myfuncSwitch(arg):
         "getfcategory": getFCategory,
         "fixpath": fixPath,
         "gettags": getTags,
+        "gettagslike": getTagsLike,
         "addwtag": addWTAG,
         "addpass": addPass,
         "updatepaths": updatePaths,
         "addwstag": addWSTAG,
         "getwstags": getWSTAGS,
         "getwstagswp": getWSTAGSWP,
-        "rmwstag": rmWSTAG
+        "rmwstag": rmWSTAG,
+        "rmwtag": rmWTAG,
+        "wallpapertags": wallpaperTags,
+        "untagged": unTAGGed
     }
     func = switcher.get(cmd)
     func(*arg[2:])

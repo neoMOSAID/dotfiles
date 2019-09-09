@@ -6,6 +6,9 @@ for i in {1000966..1001002} ; do echo "wallhaven-$i.jpg" ; done >| aa
 
 last=1001003
 
+#get numeric records
+select * from downloaded where printf("%d", name) = name ;
+
 
 
 

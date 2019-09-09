@@ -3,7 +3,6 @@
 wallhavenDir="${HOME}/Pictures/wallhaven"
 trash="${HOME}/Pictures/trashed"
 errlog="${HOME}/.wchanger_errlog"
-secondPIC="${HOME}/.i3/wallpaper/w8.jpg"
 tmp_list="/tmp/wchanger_feh_print_list"
 
 
@@ -12,6 +11,7 @@ wallhavenP="$(dirname $(realpath "$0") )/wchangerDB.py"
 workspace=$(cat /tmp/my_i3_ws )
 
 notexpired=$(python "$wallhavenP" wh_get "expired" )
+secondPIC=$(python "$wallhavenP" wh_get "secondpic" )
 goto=0
 msgId="991050"
 cl=0
@@ -62,7 +62,8 @@ function update_f(){
     fi
     echo cleaning up...
     data=$(
-        python "$wallhavenP" getall|sed '/NULL/d;/^\s*$/d'
+        python "$wallhavenP" getall
+        #|sed '/NULL/d;/^\s*$/d'
     )
     while read -r l ; do
         if ! [[ -f "$l" ]] ; then
@@ -80,7 +81,7 @@ function getP(){
     id=$(python "$wallhavenP" wh_get "ws${workspace}_pause_id_$notexpired" )
     if [[ -z "$id" ]] ; then
         >&2 echo "pause wallpaper id undefined "
-        >&2 echo "first use? run : $(basename $0) sp "
+        >&2 echo "first use? run : $(basename "$0") sp "
         exit
     fi
     pic=$(python "$wallhavenP" get "$id" )
@@ -137,9 +138,11 @@ function modes_f(){
     echo "getLD :local dir (not wallhaven)"
     echo "getwW :web or offline ( by search tag)"
     echo "getOr :all available wallpapers (by category)"
-    echo "getWT :wallpapers by tags"
+    echo "getAT :wallpapers by tags (AND) "
+    echo "getOT :wallpapers by tags (OR) "
     echo "getP :a single unchanging wallpaper"
-    echo "wDisable : disable wallpaper changer"
+    echo "wDisable :disable wallpaper changer"
+    echo "tmpmode :aaa"
 }
 
 function localDirs_f(){
@@ -160,48 +163,58 @@ function _printhelp () {
 
 function f_help(){
    printf '\033[01;33m'
+   n=$( python "$wallhavenP" getall |wc -l)
+   t=$( python "$wallhavenP" gettagslike "*" "" |wc -l)
    echo "
    multi layred wallpaper changer for i3wm
-   each workspace can have up to 8 states,
+   each workspace can have up to 9 states,
    with two modes ( default and password protected mode)
    features include (for each workspace ):
        - a single wallpaper
        - a directory of wallpapers
        - a list of favorites wallpapers
        - wallpaper changing paused/unpaused
-       - montage of the next 50 wallpapers
+       - list montage
        - ...
+
     "
-    _printhelp "af|addfav"                     "add current wallpaper to favs"
+    _printhelp "af|addfav"                     "add CW to favs"
     _printhelp "al|addlist [id] [name] [c]"    "add list"
-    _printhelp "c"                             "current wallpaper path"
-    _printhelp "cl"                            "current wallpapers list"
+    _printhelp "atw"                           "add tag to CW"
+    _printhelp "c"                             "CW path"
+    _printhelp "cl"                            "CWs list"
     _printhelp "cm"                            "current mode"
+    _printhelp "cwt"                           "CW tags"
     _printhelp "chl [id] [name] [c]"           "edit list name/category"
     _printhelp "d|download [id]"               "download image by wallhaven id"
     _printhelp "dim"                           "wallpaper dimensions"
     _printhelp "dir"                           "set local wallpapers directory"
     _printhelp "fav"                           "change favsList"
-    _printhelp "f|fix"                         "change current wallpaper's category"
+    _printhelp "f|fix"                         "change CW's category"
     _printhelp "g [number]"                    "jump to wallpaper"
     _printhelp "get"                           "get"
     _printhelp "h,help"                        "print this help"
-    _printhelp "i|id"                          "current wallpaper's wallhaven id"
+    _printhelp "i|id"                          "CW's wallhaven id"
     _printhelp "info"                          "info about current workspace states"
     _printhelp "infoall"                       "info about all workspaces "
     _printhelp "keys"                          "i3 keyboard shortcuts"
     _printhelp "l|list [o,l,number]"           "a montage of the next 50 wallpapers"
     _printhelp "lm"                            "list of available modes"
-    _printhelp "o"                             "open current wallpaper in feh"
-    _printhelp "ow"                            "open current wallpaper in browser"
-    _printhelp "p|pause"                       "enable/disable wallpaper changing"
-    _printhelp "r|rm"                          "remove from favs"
-    _printhelp "sd|setdir"                     "set wallhaven directory"
+    _printhelp "o"                             "open CW in feh"
+    _printhelp "ow"                            "open CW in browser"
+    _printhelp "p"                             "enable/disable wallpaper changing"
+    _printhelp "r|rf"                          "remove from favs"
+    _printhelp "rwt"                           "remove tag from CW"
+    _printhelp "rtt"                           "remove tag from workspace tags list"
+    _printhelp "sdd"                           "set wallhaven directory"
     _printhelp "sdc"                           "set directory category"
     _printhelp "soc"                           "set ordered category"
     _printhelp "swc"                           "set web category"
     _printhelp "swi"                           "set web search tag"
-    _printhelp "sp|setpause [number]"          "set current wallpaper as pause"
+    _printhelp "stt"                           "add tag to workspace tags list"
+    _printhelp "stc"                           "set workspace tags list category"
+    _printhelp "ssp"                           "set CW as second Monitor wallpaper"
+    _printhelp "sp|setpause [number]"          "set CW as pause"
     _printhelp "sm|setmode [number]"           "set mode for current workspace"
     _printhelp "t|tags"                        "list web search tags"
     _printhelp "up|unsetpause"                 "unset pause wallpaper"
@@ -210,8 +223,11 @@ function f_help(){
     _printhelp "updatedb [scan]"               "update database"
     _printhelp "+,-,number"                    "next/prev wallpaper"
     _printhelp "wlist [sdm]"                   "print favsLists names"
-    _printhelp "x"                             "delete current wallpaper"
+    _printhelp "x"                             "delete CW"
     _printhelp "zoom"                          "experimental not working"
+    echo "
+    $n wallpaper in database, $t tags.
+    "
     exit
 }
 
@@ -354,8 +370,8 @@ function rmFav(){
 }
 
 function unexpire(){
-    pass=$( zenity --password --name="wallpaper changer"  --timeout=30)
-    result=$( python "$wallhavenP" authenticate "wchanger" "$pass" )
+    passw=$( zenity --password --name="wallpaper changer"  --timeout=30)
+    result=$( python "$wallhavenP" authenticate "wchanger" "$passw" )
     python "$wallhavenP" wh_set "expired" "$result"
     notexpired=$result
 }
@@ -482,21 +498,21 @@ function getOr(){
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
-            >&2 echo "first use ? run : $(basename $0) p"
+            >&2 echo "first use ? run : $(basename "$0") p"
         else
             (( $pause == 1 )) && getP
     fi
     category="$(get_ordered_c)"
     [[ -z "$category" ]] && {
         >&2 echo "category not set"
-        >&2 echo "first use ? run : $(basename $0) soc"
+        >&2 echo "first use ? run : $(basename "$0") soc"
         exit
     }
     if (( $cl == 1 )) ; then
         echo "all available wallpapers (category $category)"
         exit
     fi
-    name="ws${workspace}_orederd_i_$category"
+    name="ws${workspace}_orderd_i_${category}_${notexpired}"
     index=$(python "$wallhavenP" wh_get "$name" )
     N=$(python "$wallhavenP" getorderedcount "$category" )
     index=$((index+goto))
@@ -532,8 +548,6 @@ function getOr(){
         pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
         >&2 echo "error file : $pic"
     fi
-    picID=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-    "$wallhavenScript" g "$picID" "tags" verbose "" ""
 }
 
 # $1 : path to pictures directory
@@ -599,14 +613,14 @@ function getFav(){
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
-            >&2 echo "first use ? run : $(basename $0) p"
+            >&2 echo "first use ? run : $(basename "$0") p"
         else
             (( $pause == 1 )) && getP
     fi
     fid=$( GETFID )
     if [[ -z "$fid" ]] ; then
         >&2 echo "wallpaper fav list id not set"
-        >&2 echo "first use? run : $(basename $0) fav"
+        >&2 echo "first use? run : $(basename "$0") fav"
         exit
     fi
     if (( $cl == 1 )) ; then
@@ -640,8 +654,6 @@ function getFav(){
             pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
             >&2 echo "error file : $pic"
     fi
-    picID=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-    "$wallhavenScript" g "$picID" "tags" verbose "" ""
 }
 
 function set_web_id (){
@@ -731,7 +743,7 @@ function getLD(){
     dir="$(python "$wallhavenP" wh_get "ws${workspace}_dir_$notexpired" )"
     if ! [[ -d "$dir" ]] || [[ -z "$dir" ]] ; then
         >&2 echo "wallpaper dir not defined or invalid"
-        >&2 echo "first use? run : $(basename $0) dir "
+        >&2 echo "first use? run : $(basename "$0") dir "
         exit
     fi
     pause=$(
@@ -740,7 +752,7 @@ function getLD(){
     if [[ -z "$pause" ]]
         then
             >&2 echo "pause value not set"
-            >&2 echo "first use? run : $(basename $0) p"
+            >&2 echo "first use? run : $(basename "$0") p"
         else
             (( $pause == 1 )) && getP
     fi
@@ -831,6 +843,7 @@ function printWdir(){
     index=$(python "$wallhavenP" wh_get "$iname" )
     c=$(python "$wallhavenP" wh_get "$cname" )
     python "$wallhavenP" getdir "$dir" "$c" 0 50000 > "$tmp_list"
+    (( $index == 0 )) && index=1
     case "$1" in
         o)
             feh -f "$tmp_list" 2> /dev/null
@@ -853,6 +866,40 @@ function printWdir(){
     exit
 }
 
+function printWT(){
+    arg_1="$1"
+    arg_2="$2"
+    name="ws${workspace}_tag_${notexpired}"
+    name1="ws${workspace}_tags_i_${notexpired}"
+    name2="ws${workspace}_tags_c_${notexpired}"
+    index=$(python "$wallhavenP" wh_get "$name1" )
+    c=$(python "$wallhavenP" wh_get "$name2" )
+    python "$wallhavenP" getwstagswp  "$name" "$c" 1 50000 "$arg_2" >| "$tmp_list"
+    case "$arg_1" in
+        o)
+            feh -f "$tmp_list" 2> /dev/null
+            exit
+            ;;
+        a)
+            m_W='1920'
+            index2=$((index+120))
+            ;;
+        *)
+            m_W='1920'
+            m_H='1080'
+            index2=$((index+50))
+    esac
+    sed -n -i "$index,$index2"p  "$tmp_list"
+    feh --index-info "%u\n" \
+        -x -m -W "$m_W" -H "$m_H" \
+        -E 180 -y 180  \
+        -f "$tmp_list" 2> /dev/null
+
+    exit
+}
+
+
+
 function printOrd(){
     pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
     if [[ -z "$pic" ]] ; then
@@ -861,9 +908,9 @@ function printOrd(){
         exit
     fi
     c=$(get_ordered_c)
-    name="ws${workspace}_orederd_i_$c"
+    name="ws${workspace}_orderd_i_${c}_${notexpired}"
     index=$(python "$wallhavenP" wh_get "$name" )
-    python "$wallhavenP" getordered "$c" 1 50000 > "$tmp_list"
+    python "$wallhavenP" getordered "$c" 0 50000 > "$tmp_list"
     case "$1" in
         o)
             feh -f "$tmp_list" 2> /dev/null
@@ -921,10 +968,12 @@ function printDir(){
 function listthem(){
     mode=$(wsgetMode)
     case "$mode" in
-              getFav) printFav  "$1" ; exit;;
-               getLD) printDir  "$1" ; exit;;
-               getOr) printOrd  "$1" ; exit;;
-        getDir|getwW) printWdir "$1" ; exit;;
+              getFav) printFav  "$1"       ; exit;;
+               getLD) printDir  "$1"       ; exit;;
+               getOr) printOrd  "$1"       ; exit;;
+               getOT) printWT   "$1" "or"  ; exit;;
+               getAT) printWT   "$1" "and" ; exit;;
+        getDir|getwW) printWdir "$1"       ; exit;;
     esac
     dunstify -u normal -r "$msgId"  "wallpaper changer" "not a printable list"
 }
@@ -935,10 +984,7 @@ function wlist_f (){
         else c=$1
     fi
     if (( $notexpired == 0 )) && [[ "$c" != d ]] ; then
-        (( $( pass_f) == 1 )) || {
-            echo
-            exit
-        }
+        (( $( pass_f) == 0 )) && c=d
         echo -en "\e[1A"
         echo
     fi
@@ -962,10 +1008,17 @@ function wlist_f (){
 function downloadit(){
     [[ -z "$1" ]] && getwW d
     imgID="$1"
+    imgID="${imgID##*/}"
     pic=$( "$wallhavenScript" g "$imgID" "" verbose "" "$2" )
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max  "$pic" "$secondPIC"
     fi
+    exit
+}
+
+function set2PIC(){
+    pic=$(_pic_)
+    python "$wallhavenP" wh_set "secondpic"  "$pic"
     exit
 }
 
@@ -1014,6 +1067,8 @@ function wsSetMode(){
 }
 
 function wsgetMode(){
+    [[ ! -z "$1" ]] && [[ "$1" != x ]] && \
+        notexpired=$1
     name="ws${workspace}_mode_$notexpired"
     mode=$(python "$wallhavenP" wh_get "$name" )
     if [[ -z "$mode" ]] ; then
@@ -1096,7 +1151,7 @@ function getDir(){
     dir=$(python "$wallhavenP" wh_get "$dname" )
     if [[ -z "$dir" ]] ; then
         >&2 echo "wallpaper directory not set"
-        >&2 echo "first use? run : $(basename "$0") sd"
+        >&2 echo "first use? run : $(basename "$0") sdd"
         exit
     fi
     c=$(python "$wallhavenP" wh_get "$cname" )
@@ -1123,16 +1178,15 @@ function getDir(){
         *)
             number='^[0-9]+$'
             if [[ "$1" =~ $number ]]
-                then id=$1
+                then id=$(($1-1))
             fi
     esac
     [[ -z "$id" ]] && id=0
-    if (( $id > $N )) ; then id=0 ; fi
-    if (( $id <0 )) ; then id=$N ; fi
-    id=$((id+0))
+    if (( $id >= $N )) ; then id=0 ; fi
+    if (( $id < 0 )) ; then id=$N ; fi
     pic="$(python "$wallhavenP" getdir "$dir" "$c" "$id" 1 )"
     python "$wallhavenP" wh_set "$iname"  "$id"
-    echo "$id/$N"
+    echo "$((id+1))/$N"
     echo "$id/$N" >| /tmp/wchanger_wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max   "$pic" "$secondPIC"
@@ -1142,24 +1196,19 @@ function getDir(){
         >&2 echo "error file : $pic"
     fi
     picID=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-    "$wallhavenScript" g "$picID" "tags" verbose "" ""
     exit
 }
 
 function set_tag_c(){
     name="ws${workspace}_tags_c_${notexpired}"
-    c=$(printf "d\nm\ns" \
-        |rofi -i -dmenu -p "set $name" -width -40
-    )
-    [[ -z "$c" ]] && exit
-    (( $notexpired == 0 )) && [[ "$c" == s ]] && {
-        dunstify -u normal -r "$msgId" "wallpaper changer" "not permitted"
-        exit
-    }
-    python "$wallhavenP" wh_set "$name" "$c"
+    set_category_f "$name"
 }
 
+
 function getWT(){
+    arg_1="$1"
+    arg_2="$2"
+
     name="ws${workspace}_tag_${notexpired}"
     name2="ws${workspace}_tags_i_${notexpired}"
     name3="ws${workspace}_tags_c_${notexpired}"
@@ -1176,38 +1225,43 @@ function getWT(){
     c=$(python "$wallhavenP" wh_get "$name3" )
     if [[ -z "$c" ]] ; then
         >&2 echo "category not set"
-        >&2 echo "first use ? run : $(basename $0) stc"
+        >&2 echo "first use ? run : $(basename "$0") stc"
         exit
     fi
     if (( $cl == 1 )) ; then
-        echo "tags:"
+        echo "tags($arg_2):"
         getwstags
         exit
     fi
-    N=$( python "$wallhavenP" getwstagswp  "$name" "$c" -1 50000 )
-    [[ -z "$N" ]] && {
-        echo "no matching wallpapers for tags:"
+    N=$( python "$wallhavenP" getwstagswp  "$name" "$c" -1 50000 "$arg_2" )
+    [[ -z "$N" ]] || (( $N == 0)) && {
+        >&2 echo "no matching wallpapers for tags (category $c):"
+        >&2 echo "====================="
         getwstags
+        >&2 echo "====================="
+        >&2 echo " change category : $(basename "$0") stc"
+        >&2 echo "        add tag  : $(basename "$0") stt"
+        >&2 echo "     remove tag  : $(basename "$0") rtt"
         exit
     }
     id=$(python "$wallhavenP" wh_get "$name2" )
     id=$((id+goto))
-    case "$1" in
+    case "$arg_1" in
         ""|+) id=$((id+1)) ;;
         -) id=$((id-1)) ;;
         *)
             number='^[0-9]+$'
-            if [[ "$1" =~ $number ]]
-                then id=$1
+            if [[ "$arg_1" =~ $number ]]
+                then id=$arg_1
             fi
     esac
     [[ -z "$id" ]] && id=0
-    if (( $id > $N )) ; then id=0 ; fi
-    if (( $id < 0 )) ; then id=$N ; fi
+    if (( $id >= $N )) ; then id=0 ; fi
+    if (( $id < 0 )) ; then id=$((N-1)) ; fi
     id=$((id+0))
-    pic="$(python "$wallhavenP" getwstagswp  "$name" "$c" $id 1 )"
+    pic="$(python "$wallhavenP" getwstagswp  "$name" "$c" $id 1 "$arg_2" )"
     python "$wallhavenP" wh_set "$name2"  "$id"
-    echo "$id/$N"
+    echo "$((id+1))/$N"
     echo "$id/$N" >| /tmp/wchanger_wlog
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
             feh --bg-max   "$pic" "$secondPIC"
@@ -1216,16 +1270,22 @@ function getWT(){
             pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
             >&2 echo "error file : $pic"
     fi
-    picID=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-    "$wallhavenScript" g "$picID" "tags" verbose "" ""
     exit
+}
+
+function getAT(){
+    getWT "$1" "AND"
+}
+
+function getOT(){
+    getWT "$1" "OR"
 }
 
 function f_keys(){
     cat ~/.i3/config | grep ^binds | grep wchanger \
     | sed 's/bindsym//g;
         s/exec --no-startup-id//g;
-        s@~/.i3/wchanger.sh@@g;
+        s@~/.i3/wchanger/wchanger.sh@@g;
         s/$mod/WIN/g;
         s/mod1/ALT/g;
         s/^[ \t]*//g;
@@ -1267,13 +1327,28 @@ function getWT_info(){
     info=$(
         while read -r s ; do
             ! [[ -z "$s" ]] && printf '\t\t - %s\n' "$s"
-        done <<< "$(getwstags)"
+        done <<< "$(getwstags "$1" )"
     )
+    name="ws${workspace}_tags_c_${notexpired}"
+    category=$( python "$wallhavenP" wh_get "$name" )
     if [[ ! -z "$info" ]] ; then
-            info=$(echo;echo "$info")
+            info=$(
+                    echo "tags($3) (category $category)"
+                    echo "$info"
+            )
             (( $2 == 1 )) && info="***************"
     fi
-    printf '%-10s: %s\n' "$1-getWT" "$info"
+    printf '%-10s: %s\n' "$1-$(wsgetMode "$1" )" "$info"
+}
+
+function getAT_info(){
+     [[ "$(wsgetMode "$1" )" == "getAT" ]] && \
+        getWT_info "$1" "$2" "AND"
+}
+
+function getOT_info(){
+    [[ "$(wsgetMode "$1" )" == "getOT" ]] && \
+        getWT_info "$1" "$2" "OR"
 }
 
 function getOr_info(){
@@ -1301,6 +1376,10 @@ function getDir_info(){
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
     printf '%-10s: %s\n' "$1-getDir" "$info"
+}
+
+function tmpmode_info(){
+    return 0
 }
 
 function getP_info(){
@@ -1402,34 +1481,46 @@ function cm_f(){
     modes_f|grep "$cm"
     data=$(${cm}_info "$notexpired" 0 | cut -d: -f2)
     data=${data:1}
+    data=${data//		 - /     - }
     echo "list: $data"
 }
 
 function list_tags(){
-    if [[ -z  "$1" ]]
+    if [[ -z  "$2" ]]
         then c='*'
-        else c=$1
+        else c=$2
     fi
     if (( $notexpired == 0 )) && [[ "$c" != d ]] ; then
-        (( $( pass_f) == 1 )) || {
-            echo
-            exit
-        }
+        (( $( pass_f) == 1 )) || c=d
+        echo -en "\e[1A"
         echo
     fi
-    while read -r l ; do
-        id=$(echo "$l" | cut -d: -f1 )
-        name=$(echo "$l" | cut -d: -f2 )
-        category=$(echo "$l" | cut -d: -f3 )
-        printf '\033[1;0m%10d : ' "$id"
-        [[ "$category" == d ]] && printf '\033[1;32m'
-        [[ "$category" == m ]] && printf '\033[1;34m'
-        [[ "$category" == s ]] && printf '\033[1;31m'
-        printf '%s\n' "$name"
-    done<<< "$(python "$wallhavenP" gettags "$c" )"
+    python "$wallhavenP" gettagslike "$c" "$1"  |
+    awk -F: '{
+        id=1
+        name=2
+        c=3
+        printf("\033[1;0m%10d : ",$id)
+        if ( $c == "d" ) printf("\033[1;32m")
+        if ( $c == "m" ) printf("\033[1;34m")
+        if ( $c == "s" ) printf("\033[1;31m")
+        printf("%s\n",$name)
+    }
+    '
+    #while read -r l ; do
+    #    id=$(echo "$l" | cut -d: -f1 )
+    #    name=$(echo "$l" | cut -d: -f2 )
+    #    category=$(echo "$l" | cut -d: -f3 )
+    #    printf '\033[1;0m%10d : ' "$id"
+    #    [[ "$category" == d ]] && printf '\033[1;32m'
+    #    [[ "$category" == m ]] && printf '\033[1;34m'
+    #    [[ "$category" == s ]] && printf '\033[1;31m'
+    #    printf '%s\n' "$name"
+    #done<<< "$(python "$wallhavenP" gettagslike "$c" "$1" )"
 }
 
 function getwstags(){
+    [[ ! -z "$1" ]] && notexpired=$1
     name="ws${workspace}_tag_${notexpired}"
     tags=$(
         for t in `python "$wallhavenP" getwstags "$name" ` ; do
@@ -1442,14 +1533,12 @@ function getwstags(){
 function addwsTag(){
     name="ws${workspace}_tag_${notexpired}"
     if [[ -z  "$1" ]]
-    then c='*'
-    else c=$1
+        then c='*'
+        else c=$1
     fi
     if (( $notexpired == 0 )) && [[ "$c" != d ]] ; then
-        (( $( pass_f) == 1 )) || {
-            echo
-            exit
-        }
+        (( $( pass_f) == 0 )) && c="d"
+        echo -en "\e[1A"
         echo
     fi
     ans=$(
@@ -1469,17 +1558,90 @@ function rwstags(){
     ans=$(getwstags|rofi -i -dmenu -p "$msg" -width -80)
     [[ -z "$ans" ]] && exit
     tag=$(python "$wallhavenP" gettagid "$ans")
-    echo removing tag...
+    echo "tag removed..."
     python "$wallhavenP" rmwstag "$name" "$tag"
     exit
 }
 
+function cwt_f(){
+    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$pic" ]] ; then
+        echo not a wallhaven wallpaper
+        exit
+    fi
+    echo "CW : $pic"
+    echo "tags:"
+    echo "======================="
+    for t in `python "$wallhavenP" wallpapertags "$pic" ` ; do
+        python "$wallhavenP" gettagname "$t"
+    done |sort
+    exit
+}
+
+function add_tag_to_w(){
+    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$pic" ]] ; then
+        echo not a wallhaven wallpaper
+        exit
+    fi
+    ans=$(
+    python "$wallhavenP" gettags "*" \
+        |cut -d: -f2 |sort\
+        |rofi -i -dmenu -p "select tag to add" -width -80
+    )
+    [[ -z "$ans" ]] && exit
+    tag=$( python "$wallhavenP" gettagid "$ans" )
+    python "$wallhavenP" addwtag "$tag" "$pic"
+    exit
+}
+
+function rm_tag_to_w(){
+    pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
+    if [[ -z "$pic" ]] ; then
+        echo not a wallhaven wallpaper
+        exit
+    fi
+    ans=$(
+        for t in `python "$wallhavenP" wallpapertags "$pic" ` ; do
+            python "$wallhavenP" gettagname "$t"
+        done |sort \
+        |rofi -i -dmenu -p "select tag to add" -width -80
+    )
+    [[ -z "$ans" ]] && exit
+    tag=$( python "$wallhavenP" gettagid "$ans" )
+    python "$wallhavenP" rmwtag "$tag" "$pic"
+    exit
+}
+
+function list_modes_f(){
+    modes_f |awk -F: '{printf("%12s : %s\n",$1,$2)}'
+}
+
+function tmpmode(){
+    i=$(cat ~/.i3/wchanger/i)
+    pics=$(cat ~/.i3/wchanger/ll)
+    n=$(echo "$pics"|wc -l)
+    i=$((i+1))
+    (( $i > $n )) && i=1
+    [[ ! -z "$1" ]] && i=$1
+    id=$(echo "$pics"|sed -n "$i"p )
+    #pic=$(python "$wallhavenP" get "$id" )
+    pic=$id
+    feh --bg-max   "$pic" "$secondPIC"
+    echo "$i/$n"
+    echo "$i" >| ~/.i3/wchanger/i
+    exit
+}
+
 case "$1" in
+            "")     ;;
      af|addfav)     addFav "$2"  ;;
     al|addlist)     addFAVLIST "$2" "$3" ;;
+           atw)     add_tag_to_w ;;
              c)     echo "$( _pic_ )" ; exit ;;
             cl)     cl=1 ;;
             cm)     cm_f ; exit ;;
+           cwt)     cwt_f ;;
            chl)     changeListName "$2" "$3" "$4" ;;
     d|download)     downloadit "$2" "$3" ;;
            dim)
@@ -1503,7 +1665,7 @@ case "$1" in
        infoall)     all_info "$2" ; exit;;
           keys)     f_keys ;;
         l|list)     listthem "$2" ;;
-            lm)     modes_f ; exit ;;
+            lm)     list_modes_f ; exit ;;
              o)     feh "$( _pic_ )" & disown ; exit ;;
             ow)
                     pic=$( _pic_ | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
@@ -1514,19 +1676,21 @@ case "$1" in
                     firefox "https://wallhaven.cc/w/$pic" & disown
                     exit
                     ;;
-           r|rm)    rmFav ;;
-            rwt)    rwstags ;;
-      sd|setdir)    setDir "$2" ;;
+           r|rf)    rmFav ;;
+            rwt)    rm_tag_to_w ;;
+            rtt)    rwstags ;;
+            sdd)    setDir "$2" ;;
             sdc)    set_dir_c  ;;
             soc)    set_ordered_c  ;;
             swc)    set_web_c  ;;
-            stc)    set_tag_c  ;;
             swi)    set_web_id "$2" ;;
-            swt)    addwsTag "$2" ;;
+            stt)    addwsTag "$2" ;;
+            stc)    set_tag_c  ;;
             set)    saveData "$2" ;;
+            ssp)    set2PIC  ;;
     sp|setpause)    setPauseW "$2" "$3" ;;
      sm|setmode)    wsSetMode "$2" "$3" ;;
-         t|tags)    list_tags "$2" ; exit ;;
+         t|tags)    list_tags "$2" "$3" ; exit ;;
   up|unsetpause)    UnsetPauseW "$2" "$3" ;;
      u|unexpire)    unexpire ;;
             url)    print_url ;;

@@ -29,7 +29,7 @@ APIKEY="$(cat "$(dirname $(realpath "$0") )/apikey" )"
 httpHeader="X-API-Key: $APIKEY"
 
 function gettags(){
-    [[ "$arg_4" == "verbose" ]] && >&2 echo "getting tags..."
+    [[ "$arg_4" == "verbose" ]] && >&2 printf "\033[1;31mgetting tags...\033[0m\n"
     l=$(cat "$tmpfile" | jq -r ".data.tags|length")
     [[ -z "$l" ]] && return
     for (( i=0 ; i< $l ; i++ )) ; do
@@ -42,7 +42,7 @@ function gettags(){
             nsfw) mycategory=s ;;
             sketchy) mycategory=m ;;
         esac
-        #>&2 echo "$name"
+        [[ "$arg_4" == "verbose" ]] && >&2 echo "$name"
         python "$wallhavenP" adddesc "$id" "$name" "$alias" "$mycategory"
         python "$wallhavenP" addwtag "$id" "$arg_2"
     done
@@ -94,6 +94,11 @@ function init_f(){
 }
 
 function downloadit_f(){
+    if [[ "$arg_1" == g ]] && [[ "$purity" == sfw ]] ; then
+        LOCATION="${HOME}/Pictures/wallhaven/fetched/"
+        [[ ! -d "$LOCATION" ]] && mkdir -p "$LOCATION"
+        cd "$LOCATION" || exit
+    fi
     wget -c -q "$imgURL"
     if [[ -f "$PWD/$imgNAME" ]] ; then
         touch "$PWD/$imgNAME"
