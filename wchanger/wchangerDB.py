@@ -75,6 +75,11 @@ def createDB():
         wsTags(name text, tag integer ) """)
     c.execute(""" CREATE UNIQUE INDEX IF NOT EXISTS
         wstag ON wsTags (name,tag) """)
+    c.execute("""CREATE TABLE IF NOT EXISTS dimensions(
+        name text  NOT NULL UNIQUE,
+        x INTEGER,
+        y INTEGER
+    ) """)
     con.commit()
     c.close()
     con.close()
@@ -154,6 +159,23 @@ def updatePaths():
                 ON CONFLICT(name) DO UPDATE SET
                 dir="{d}" , path="{p}" ;
                 """.format(n=field[0], d=field[1], p=field[2]))
+        con.commit()
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
+def addDim(name, x, y):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""
+                  INSERT OR IGNORE INTO dimensions (name, x, y)
+                  VALUES("{name}", "{x}", "{y}")
+                  """ .format(name=name, x=x, y=y))
         con.commit()
         c.close()
     except sqlite3.Error as error:
@@ -1180,7 +1202,8 @@ def myfuncSwitch(arg):
         "rmwstag": rmWSTAG,
         "rmwtag": rmWTAG,
         "wallpapertags": wallpaperTags,
-        "untagged": unTAGGed
+        "untagged": unTAGGed,
+        "adddim": addDim
     }
     func = switcher.get(cmd)
     func(*arg[2:])

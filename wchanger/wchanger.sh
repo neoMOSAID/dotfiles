@@ -163,8 +163,6 @@ function _printhelp () {
 
 function f_help(){
    printf '\033[01;33m'
-   n=$( python "$wallhavenP" getall |wc -l)
-   t=$( python "$wallhavenP" gettagslike "*" "" |wc -l)
    echo "
    multi layred wallpaper changer for i3wm
    each workspace can have up to 9 states,
@@ -225,9 +223,6 @@ function f_help(){
     _printhelp "wlist [sdm]"                   "print favsLists names"
     _printhelp "x"                             "delete CW"
     _printhelp "zoom"                          "experimental not working"
-    echo "
-    $n wallpaper in database, $t tags.
-    "
     exit
 }
 
@@ -1205,6 +1200,8 @@ function set_tag_c(){
 }
 
 
+# $1 : ...
+# $2 : AND/OR
 function getWT(){
     arg_1="$1"
     arg_2="$2"
@@ -1235,7 +1232,7 @@ function getWT(){
     fi
     N=$( python "$wallhavenP" getwstagswp  "$name" "$c" -1 50000 "$arg_2" )
     [[ -z "$N" ]] || (( $N == 0)) && {
-        >&2 echo "no matching wallpapers for tags (category $c):"
+        >&2 echo "no matching wallpapers for tags ($arg_2) (category $c):"
         >&2 echo "====================="
         getwstags
         >&2 echo "====================="

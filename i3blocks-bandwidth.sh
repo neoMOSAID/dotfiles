@@ -114,3 +114,4 @@ if hash bc 2>/dev/null && [[ "$tx_rate" -gt 1048576 ]]; then
 else
   echo -n "${tx_kib}K"
 fi
+echo " "

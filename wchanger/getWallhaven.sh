@@ -58,7 +58,7 @@ function init_f(){
     dm|md) FILTER=110 ;;
     dsm|dms|mds|msd|smd|sdm) FILTER=111 ;;
     esac
-    LOCATION="${HOME}/Pictures/wallhaven/.ind/s-444/"
+    LOCATION="${HOME}/Pictures/wallhaven/.ind/s-555/"
     [[ "$arg_1" == g ]] && LOCATION="${HOME}/Pictures/wallhaven/.ind/fetched/"
     [[ "$arg_1" == d ]] && LOCATION="${HOME}/Pictures/wallhaven/d-333/"
 
@@ -105,7 +105,10 @@ function downloadit_f(){
         echo "$PWD/$imgNAME"
         [[ "$arg_4" == "verbose" ]] && >&2 echo "$imgNAME: new"
     fi
+    dim=$( identify -format '%w  %h' "$PWD/$imgNAME"  )
+    dim=( $dim )
     python "$wallhavenP" add "$imgID" "${PWD##*/}" "$PWD/$imgNAME"
+    python "$wallhavenP" adddim "$imgID" "${dim[0]}" "${dim[1]}"
     echo "new" >| "$logfile"
     case "$purity" in
         sfw) mycategory=d ;;
