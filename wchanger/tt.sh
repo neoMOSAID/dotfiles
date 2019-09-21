@@ -29,7 +29,7 @@ while read -r i ; do
         k=$((k+1))
         continue
     else
-        ./getWallhaven.sh g "$i" tags verbose "" ""
+        ./tag.sh "$i"
     fi
     k=$((k+1))
     sleep 7

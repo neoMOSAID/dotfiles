@@ -1,13 +1,16 @@
 #!/bin/bash
 
+SCRIPTPATH="$(dirname $(realpath "$0") )"
 wallhavenDir="${HOME}/Pictures/wallhaven"
 trash="${HOME}/Pictures/trashed"
 errlog="${HOME}/.wchanger_errlog"
 tmp_list="/tmp/wchanger_feh_print_list"
+newFilePath="/tmp/wchanger_filePath"
 
 
-wallhavenScript="$(dirname $(realpath "$0") )/getWallhaven.sh"
-wallhavenP="$(dirname $(realpath "$0") )/wchangerDB.py"
+wallhavenFetchOne="$SCRIPTPATH/fetchOne.sh"
+wallhavenScript="$SCRIPTPATH/getW.sh"
+wallhavenP="$SCRIPTPATH/wchangerDB.py"
 workspace=$(cat /tmp/my_i3_ws )
 
 notexpired=$(python "$wallhavenP" wh_get "expired" )
@@ -72,7 +75,7 @@ function update_f(){
             echo "$id deleted"
         fi
     done <<< "$data"
-    echo "removing deleted from categories and favs"
+    echo "removing deleted from categories, favs and tags"
     python "$wallhavenP" "resetRemoved"
     exit
 }
@@ -801,18 +804,18 @@ function getwW(){
                   echo "web wallhaven : $squery (category $c)"
                   exit
               fi
-              pic=$( "$wallhavenScript" "$c" "$squery" "" verbose)
+              rm -f "$newFilePath" 2>/dev/null
+              ( "$wallhavenScript" one "$squery" "$c" v ) &
+              while [[ ! -f "$newFilePath" ]] ; do sleep 0.100 ; done
+              pic=$( cat "$newFilePath" )
     fi
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max  "$pic" "$secondPIC"
-        "$wallhavenScript" "adddesc" "$squery" "" quiet
         else
             pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
             [[ -z "$pic" ]] && exit
             >&2 echo "error file : $pic"
     fi
-    picID=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
-    "$wallhavenScript" g "$picID" "tags" verbose "" ""
     exit
 }
 
@@ -1004,7 +1007,10 @@ function downloadit(){
     [[ -z "$1" ]] && getwW d
     imgID="$1"
     imgID="${imgID##*/}"
-    pic=$( "$wallhavenScript" g "$imgID" "" verbose "" "$2" )
+    rm -f "$newFilePath" 2>/dev/null
+    ( "$wallhavenFetchOne" "$imgID" v ) &
+    while [[ ! -f "$newFilePath" ]] ; do sleep 0.100 ; done
+    pic=$( cat "$newFilePath" )
     if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
         feh --bg-max  "$pic" "$secondPIC"
     fi
@@ -1190,7 +1196,6 @@ function getDir(){
         pic=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
         >&2 echo "error file : $pic"
     fi
-    picID=$( echo "$pic" | sed -E 's@^.*wallhaven-(.*)\..*$@\1@g' )
     exit
 }
 
@@ -1232,13 +1237,15 @@ function getWT(){
     fi
     N=$( python "$wallhavenP" getwstagswp  "$name" "$c" -1 50000 "$arg_2" )
     [[ -z "$N" ]] || (( $N == 0)) && {
-        >&2 echo "no matching wallpapers for tags ($arg_2) (category $c):"
+        >&2 echo "no matching wallpapers for tags (category $c):"
         >&2 echo "====================="
         getwstags
         >&2 echo "====================="
+        >&2 echo "suggestions :"
         >&2 echo " change category : $(basename "$0") stc"
         >&2 echo "        add tag  : $(basename "$0") stt"
         >&2 echo "     remove tag  : $(basename "$0") rtt"
+        >&2 echo "change mode getAT (AND) to getOT (OR)"
         exit
     }
     id=$(python "$wallhavenP" wh_get "$name2" )
@@ -1296,7 +1303,7 @@ function getFav_info(){
     ! [[ -z "$str" ]] && info="$str"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-10s: %s\n' "$1-getFav" "$info"
+    printf '%-13s: %s\n' "$1-getFav" "$info"
 }
 
 function getLD_info(){
@@ -1305,7 +1312,7 @@ function getLD_info(){
     ! [[ -z "$dir" ]] && info="$(basename "$dir")"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-10s: %s\n' "$1-getLD" "$info"
+    printf '%-13s: %s\n' "$1-getLD" "$info"
 }
 
 function getwW_info(){
@@ -1317,7 +1324,7 @@ function getwW_info(){
     ! [[ -z "$c" ]] && info+=" (category $c)"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-10s: %s\n' "$1-getwW" "$info"
+    printf '%-13s: %s\n' "$1-getwW" "$info"
 }
 
 function getWT_info(){
@@ -1329,23 +1336,21 @@ function getWT_info(){
     name="ws${workspace}_tags_c_${notexpired}"
     category=$( python "$wallhavenP" wh_get "$name" )
     if [[ ! -z "$info" ]] ; then
-            info=$(
-                    echo "tags($3) (category $category)"
-                    echo "$info"
-            )
-            (( $2 == 1 )) && info="***************"
+        info=$(
+                echo "tags($3) (category $category)"
+                echo "$info"
+        )
+        (( $2 == 1 )) && info="***************"
     fi
-    printf '%-10s: %s\n' "$1-$(wsgetMode "$1" )" "$info"
+    printf '%-13s: %s\n' "$1-get(A/O)T" "$info"
 }
 
 function getAT_info(){
-     [[ "$(wsgetMode "$1" )" == "getAT" ]] && \
-        getWT_info "$1" "$2" "AND"
+        getWT_info "$1" "$2" "AND/OR"
 }
 
 function getOT_info(){
-    [[ "$(wsgetMode "$1" )" == "getOT" ]] && \
-        getWT_info "$1" "$2" "OR"
+    return
 }
 
 function getOr_info(){
@@ -1357,7 +1362,7 @@ function getOr_info(){
     }
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-10s: %s\n' "$1-getOr" "$info"
+    printf '%-13s: %s\n' "$1-getOr" "$info"
 }
 
 function getDir_info(){
@@ -1372,7 +1377,7 @@ function getDir_info(){
     ! [[ -z "$dir" ]] && info="$dir (category $c)"
     ! [[ -z "$info" ]] && (( $2 == 1 )) \
         && info="***************"
-    printf '%-10s: %s\n' "$1-getDir" "$info"
+    printf '%-13s: %s\n' "$1-getDir" "$info"
 }
 
 function tmpmode_info(){
@@ -1386,20 +1391,22 @@ function getP_info(){
     if [[ -z "$pic" ]]
         then
             info=""
-            printf '%-10s: %s\n' "$1-getP" "$info"
+            printf '%-13s: %s\n' "$1-getP" "$info"
             return
         else
             if (( $2 == 1 ))
                 then
                     info="***************"
-                    printf '%-10s: %s\n' "getP $1" "$info"
+                    printf '%-13s: %s\n' "getP $1" "$info"
                     return
                 else
                     info="$pic"
-                    str=$( python "$wallhavenP" getfavlistbyname "$pic" \
-                        | sed '{s/^.*://g}'
+                    str=$(
+                        for t in `python "$wallhavenP" wallpapertags "$pic" ` ; do
+                            python "$wallhavenP" gettagname "$t"
+                        done |sort
                     )
-                    printf '%-10s: %s\n' "$1-getP" "$info"
+                    printf '%-13s: %s\n' "$1-getP" "$info"
                     while read -r s ; do
                         printf '\t\t - %s\n' "$s"
                     done <<< "$str"
@@ -1468,7 +1475,6 @@ function print_url(){
     squery=$(python "$wallhavenP" wh_get "$sname")
     cname="ws${workspace}_web_c_${notexpired}"
     c=$(python "$wallhavenP" wh_get "$cname")
-    url=$( "$wallhavenScript" "$c" "$squery" url verbose )
     echo "$url"
     exit
 }
@@ -1588,7 +1594,12 @@ function add_tag_to_w(){
     )
     [[ -z "$ans" ]] && exit
     tag=$( python "$wallhavenP" gettagid "$ans" )
+    [[ -z "$tag" ]] && {
+        echo "error : no tag id for $ans"
+        exit
+    }
     python "$wallhavenP" addwtag "$tag" "$pic"
+    echo "$tag:$ans  : added to $pic"
     exit
 }
 
@@ -1616,17 +1627,55 @@ function list_modes_f(){
 
 function tmpmode(){
     i=$(cat ~/.i3/wchanger/i)
+    [[ $1 == "-" ]] && i=$((i-2))
     pics=$(cat ~/.i3/wchanger/ll)
     n=$(echo "$pics"|wc -l)
     i=$((i+1))
     (( $i > $n )) && i=1
-    [[ ! -z "$1" ]] && i=$1
+    number='^[0-9]+$'
+    if [[ "$1" =~ $number ]]
+        then i=$1
+    fi
     id=$(echo "$pics"|sed -n "$i"p )
     #pic=$(python "$wallhavenP" get "$id" )
     pic=$id
     feh --bg-max   "$pic" "$secondPIC"
     echo "$i/$n"
     echo "$i" >| ~/.i3/wchanger/i
+    exit
+}
+
+function crt_f(){
+    rm -f "$newFilePath" 2>/dev/null
+    ( "$wallhavenScript" one "$2" "smd" v ) &
+    while [[ ! -f "$newFilePath" ]] ; do sleep 0.100 ; done
+    pic=$( cat "$newFilePath" )
+    if `file "$pic" | grep -i -w -E "bitmap|image" >/dev/null` ; then
+        feh --bg-max  "$pic" "$secondPIC"
+    fi
+    exit
+}
+
+function starTag(){
+    stars=$1
+    if [[ -z  "$2" ]]
+        then c='*'
+        else c=$2
+    fi
+    if (( $notexpired == 0 )) && [[ "$c" != d ]] ; then
+        (( $( pass_f) == 1 )) || c=d
+        echo -en "\e[1A"
+        echo
+    fi
+    ans=$(
+        python "$wallhavenP" gettags "$c" \
+        |cut -d: -f2 |sort\
+        |rofi -i -dmenu -p "select tag to add" -width -80
+    )
+    [[ -z "$ans" ]] && exit
+    tag=$( python "$wallhavenP" gettagid "$ans" )
+    python "$wallhavenP" star "$tag" "$stars"
+    echo "$ans:$stars"
     exit
 }
 
@@ -1639,6 +1688,7 @@ case "$1" in
             cl)     cl=1 ;;
             cm)     cm_f ; exit ;;
            cwt)     cwt_f ;;
+           crt)     crt_f "$2" ;;
            chl)     changeListName "$2" "$3" "$4" ;;
     d|download)     downloadit "$2" "$3" ;;
            dim)
@@ -1676,6 +1726,7 @@ case "$1" in
            r|rf)    rmFav ;;
             rwt)    rm_tag_to_w ;;
             rtt)    rwstags ;;
+              s)    starTag "$2" "$3" ;;
             sdd)    setDir "$2" ;;
             sdc)    set_dir_c  ;;
             soc)    set_ordered_c  ;;

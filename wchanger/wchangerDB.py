@@ -47,13 +47,17 @@ def createDB():
     name text  NOT NULL UNIQUE,
     category text NOT NULL DEFAULT "s"
     );""")
-    c.execute("""CREATE TABLE IF NOT EXISTS tags(
-    id INTEGER PRIMARY KEY  ,
-    tag integer  NOT NULL UNIQUE ,
-    name text NOT NULL ,
-    alias text NOT NULL DEFAULT "",
-    category text NOT NULL DEFAULT ""
+    c.execute("""CREATE TABLE IF NOT EXISTS "tags" (
+        "id"	INTEGER,
+        "tag"	integer NOT NULL UNIQUE,
+        "name"	text NOT NULL,
+        "alias"	text NOT NULL,
+        "category"	text NOT NULL,
+        "value"	INTEGER,
+        PRIMARY KEY("id")
     ) """)
+    c.execute("""CREATE UNIQUE INDEX IF NOT EXISTS
+    "tagName" ON "tags" ( "tag", "name" )""")
     c.execute("""CREATE TABLE IF NOT EXISTS favs(
     id INTEGER PRIMARY KEY  ,
     fid integer NOT NULL,
@@ -145,6 +149,22 @@ def authenticate(user, password):
         print(1)
     else:
         print(0)
+
+
+def starTag(tag, stars):
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute(""" UPDATE tags SET
+        value="{s}" WHERE tag="{t}"
+        """.format(t=tag, s=stars))
+        con.commit()
+        c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
 
 
 def updatePaths():
@@ -359,7 +379,7 @@ def addFile(name, mdir, path):
             con.close()
 
 
-def adddescription(tag, name, alias, category):
+def createTag(tag, name, alias, category):
     try:
         con = connectDB()
         c = con.cursor()
@@ -663,6 +683,10 @@ def resetRemoved():
         ) ; """)
         c.execute(""" delete from favs
         where name in (
+            select name from downloaded where path = ""
+        ) ; """)
+        c.execute(""" delete from wtags
+        where wallpaper in (
             select name from downloaded where path = ""
         ) ; """)
         con.commit()
@@ -1003,8 +1027,8 @@ def getTagID(name):
     try:
         con = connectDB()
         c = con.cursor()
-        c.execute("""select tag from tags where name="{name}"
-         """ .format(name=name))
+        c.execute("""select tag from tags where name="{n}"
+         """ .format(n=name))
         row = c.fetchone()
         if(row):
             print(row[0])
@@ -1153,6 +1177,7 @@ def changeList(mid, mlist, category):
 def myfuncSwitch(arg):
     cmd = arg[1]
     switcher = {
+        "addpass": addPass,
         "addfav": addFav,
         "rmfav": rmFav,
         "addfavlist": addFavList,
@@ -1160,7 +1185,6 @@ def myfuncSwitch(arg):
         "getfavs": getFavs,
         "getfcount": getFcount,
         "add": addFile,
-        "adddesc": adddescription,
         "downloaded": fileExists,
         "get": getFileByName,
         "geti": getFileByID,
@@ -1191,16 +1215,17 @@ def myfuncSwitch(arg):
         "gettagname": getTagName,
         "getfcategory": getFCategory,
         "fixpath": fixPath,
+        "createtag": createTag,
         "gettags": getTags,
         "gettagslike": getTagsLike,
         "addwtag": addWTAG,
-        "addpass": addPass,
         "updatepaths": updatePaths,
         "addwstag": addWSTAG,
         "getwstags": getWSTAGS,
         "getwstagswp": getWSTAGSWP,
         "rmwstag": rmWSTAG,
         "rmwtag": rmWTAG,
+        "star": starTag,
         "wallpapertags": wallpaperTags,
         "untagged": unTAGGed,
         "adddim": addDim
