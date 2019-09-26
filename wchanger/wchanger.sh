@@ -7,7 +7,7 @@ errlog="${HOME}/.wchanger_errlog"
 tmp_list="/tmp/wchanger_feh_print_list"
 newFilePath="/tmp/wchanger_filePath"
 
-
+iterFile="$SCRIPTPATH/iter"
 wallhavenFetchOne="$SCRIPTPATH/fetchOne.sh"
 wallhavenScript="$SCRIPTPATH/getW.sh"
 wallhavenP="$SCRIPTPATH/wchangerDB.py"
@@ -384,6 +384,7 @@ function pass_f(){
             printf "0"
     fi
 }
+
 
 # $1 workspace
 # $2 f
@@ -1679,6 +1680,19 @@ function starTag(){
     exit
 }
 
+function iter_f(){
+    if ! [[ -z "$1" ]] ; then
+        echo "$1" >| "$iterFile"
+    fi
+    it=$(cat "$iterFile")
+    c=$(ls -1 "$wallhavenDir/d-$it/fetched" 2>/dev/null | wc -l)
+    ci=$(ls -1 "$wallhavenDir/.ind/s-$it/fetched" 2>/dev/null| wc -l)
+    echo "it : $it"
+    echo "cd : $c"
+    echo "ci : $ci"
+    exit
+}
+
 case "$1" in
             "")     ;;
      af|addfav)     addFav "$2"  ;;
@@ -1710,6 +1724,7 @@ case "$1" in
                     exit ;;
           info)     f_info ; exit;;
        infoall)     all_info "$2" ; exit;;
+          iter)     iter_f "$2" ;;
           keys)     f_keys ;;
         l|list)     listthem "$2" ;;
             lm)     list_modes_f ; exit ;;

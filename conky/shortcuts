@@ -69,19 +69,19 @@ ALT+d${goto 230} myBash_functions.sh eglllr
 ALT+t${goto 230} myBash_functions.sh ttor
 control+less${goto 230} ws.sh ++
 control+shift+less${goto 230} ws.sh --
-ALT+g${goto 230} wchanger.sh x
+ALT+g${goto 230} wchanger.sh p
 ALT+h${goto 230} wchanger.sh dir
-ALT+j${goto 230} wchanger.sh p
-ALT+k${goto 230} wchanger.sh fav
-ALT+l${goto 230} wchanger.sh fav
+ALT+j${goto 230} wchanger.sh fav
+ALT+k${goto 230} wchanger.sh sdd
+ALT+l${goto 230} wchanger.sh stt
 ALT+m${goto 230} wchanger.sh u
 ALT+comma${goto 230} wchanger.sh -
 ALT+semicolon${goto 230} wchanger.sh +
 ALT+colon${goto 230} wchanger.sh fix
 ALT+exclam${goto 230} wchanger.sh list
 ALT+ugrave${goto 230} wchanger.sh af
-ALT+asterisk${goto 230} wchanger.sh rm
+ALT+asterisk${goto 230} wchanger.sh rf
 ALT+dead_circumflex${goto 230} wchanger.sh setmode
-ALT+dollar${goto 230} wchanger.sh setdir
+ALT+dollar${goto 230} wchanger.sh x
 ${endif}
 ${endif}

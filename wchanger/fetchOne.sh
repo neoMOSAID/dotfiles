@@ -36,7 +36,7 @@ LOCATION="$wallhavenDIR/.ind/s-$ITERATION/fetched"
 
 case "$purity" in
     sfw) mycategory=d
-         LOCATION="$wallhavenDIR/fetched/" ;;
+         LOCATION="$wallhavenDIR/d-$ITERATION/fetched/" ;;
     nsfw) mycategory=s ;;
     sketchy) mycategory=m ;;
 esac

@@ -135,7 +135,7 @@ function m_play() {
         kill -9 $(cat "$pidfile" ) 2>/dev/null
     }
     mpv --input-ipc-server=$mpvsocketfile \
-        --quiet \
+        --quiet --loop-file=no \
         --playlist="$playlistFile" --playlist-start=$index $loop \
         --volume=30 > "$datafile" 2>&1  & disown
     pid="$!"
@@ -360,7 +360,7 @@ function f_load(){
         kill -9 $(cat "$pidfile" ) 2>/dev/null
     }
     mpv --input-ipc-server=$mpvsocketfile \
-        --quiet \
+        --quiet --loop-file=no \
         --playlist="$playlistFile" \
         --volume=30 > "$datafile" 2>&1  & disown
     pid="$!"

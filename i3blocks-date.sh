@@ -7,8 +7,8 @@ wsn=$( bash /home/mosaid/.i3/workspaces.sh $wsi )
 case "$BLOCK_BUTTON" in
     1)  n=$(echo $((`date '+%d'`))|wc -c )
         msg="$(cal -m)"
-        msg+="Upcoming Prayer"
-        msg+="$(cat /tmp/nextPrayerTime | sed 's/ Upcoming Prayer //' )"
+        #msg+="$(echo)"
+        #msg+="$(cat /tmp/nextPrayerTime | sed 's/ Upcoming Prayer //' )"
         dunstify -u normal -r "$msgId"  "$msg" ;;
     3) i3-msg "workspace $wsn;  exec  --no-startup-id lxterminal -e bicon.bin ranger " ;;
     4) wsi=$((wsi-1))

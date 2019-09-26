@@ -25,9 +25,10 @@ def connectDB():
 def createDB():
     con = connectDB()
     c = con.cursor()
-    c.execute("""CREATE TABLE IF NOT EXISTS PASSWORDS(
-    user text  NOT NULL UNIQUE default "",
-    password text  NOT NULL default ""
+    c.execute("""
+    CREATE TABLE  IF NOT EXISTS "PASSWORDS" (
+        "user"	text NOT NULL UNIQUE,
+        "password"	text NOT NULL
     );""")
     c.execute("""CREATE TABLE IF NOT EXISTS downloaded(
     id INTEGER PRIMARY KEY  ,
@@ -71,10 +72,13 @@ def createDB():
     name text  NOT NULL UNIQUE,
     category text NOT NULL DEFAULT "s"
     ) """)
-    c.execute("""CREATE TABLE IF NOT EXISTS whistory(
-    name text  NOT NULL UNIQUE default "",
-    value text NOT NULL default "0"
-    ) """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS "whistory" (
+        "id"	INTEGER NOT NULL,
+        "name"	text NOT NULL DEFAULT '' UNIQUE,
+        "value"	text NOT NULL DEFAULT '0',
+        PRIMARY KEY("id")
+    ); """)
     c.execute("""CREATE TABLE IF NOT EXISTS
         wsTags(name text, tag integer ) """)
     c.execute(""" CREATE UNIQUE INDEX IF NOT EXISTS
