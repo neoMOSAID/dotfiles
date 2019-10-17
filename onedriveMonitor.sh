@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#echo "" >| "${HOME}/.onedriveMonitor"
 while true ; do
     sleep 30
     msg1=$(
@@ -13,11 +12,11 @@ while true ; do
         |tail -1 \
         |awk -F: '{print $NF}'
     )
-    [[ "$msg2" == "}" ]] && echo "$msg2" >> "${HOME}/.onedriveMonitor"
+    [[ "$msg2" == "}" ]] && echo "$msg2" >> "/tmp/.onedriveMonitor"
     if ! [[ -z "$msg1" ]] ; then
         systemctl --user restart onedrive
         echo "$(date '+%a %d %h %Y %H:%M:%S') : restarting onedrive"
-        echo "$(date '+%a %d %h %Y %H:%M:%S') : restarting onedrive" >> "${HOME}/.onedriveMonitor"
+        echo "$(date '+%a %d %h %Y %H:%M:%S') : restarting onedrive" >> "/tmp/.onedriveMonitor"
     fi
 done
 

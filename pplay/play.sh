@@ -161,6 +161,16 @@ function f_title () {
     echo "$title"
 }
 
+function file_by_index(){
+    pplay_pid=$( f_pid )
+    if [[ -z "$pplay_pid" ]] ; then
+        echo 0
+        return
+    fi
+    url=$(sed -n "$1"p "$playlistFile" )
+    echo $url
+}
+
 function f_index(){
     pplay_pid=$( f_pid )
     if [[ -z "$pplay_pid" ]] ; then
@@ -370,12 +380,18 @@ function f_load(){
 function f_remove(){
     mode="$( f_mode )"
     if [[ -z "$1" ]]
-        then file="$( f_url )"
-        else file="${1//\\/}"
+        then
+            file="$( f_url )"
+            f_index
+            f_title
+        else
+            number='^[0-9]+$'
+            if [[ "$1" =~ $number ]]
+                then file="$(file_by_index $1)"
+                else file="${1//\\/}"
+            fi
     fi
-    f_index
-    echo "$file"
-    f_title
+    echo "$mode::$file"
     echo
     printf '\033[1;31m'
     read -r -p " remove it (y/N) ? : " answer
@@ -383,6 +399,7 @@ function f_remove(){
     [[ "$answer" == "y" ]] || return
     php -f "$phpPplay" f=removefile "list=$mode" "file=$file"
     f_kill
+    sleep 1.2
     f_play
 }
 

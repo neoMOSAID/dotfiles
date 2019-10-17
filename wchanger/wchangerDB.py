@@ -937,6 +937,28 @@ def getTagsLike(category, pattern):
             con.close()
 
 
+def getTagsByStars(category, stars):
+    where = where_c(category)
+    if(where == ""):
+        where = '''where value="''' + stars + '''"'''
+    else:
+        where += '''and value="''' + stars + '''"'''
+    try:
+        con = connectDB()
+        c = con.cursor()
+        c.execute("""select tag,name,category from tags
+            {w} order by tag asc """ .format(w=where))
+        rows = c.fetchall()
+        for row in rows:
+            print("%s:%s:%s" % (row[0], row[1], row[2]))
+            c.close()
+    except sqlite3.Error as error:
+        eprint("@%s: %s" % (inspect.stack()[0][3], error))
+    finally:
+        if (con):
+            con.close()
+
+
 def getTags(category):
     try:
         con = connectDB()
@@ -1221,6 +1243,7 @@ def myfuncSwitch(arg):
         "fixpath": fixPath,
         "createtag": createTag,
         "gettags": getTags,
+        "gettagsbystars": getTagsByStars,
         "gettagslike": getTagsLike,
         "addwtag": addWTAG,
         "updatepaths": updatePaths,

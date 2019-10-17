@@ -782,6 +782,10 @@ function getwW(){
           then
               getDir "$@"
           else
+              #-------------------------------
+              #disabling web search
+              #-------------------------------
+              getDir "$@"
               sname="ws${workspace}_web_id_${notexpired}"
               squery=$(python "$wallhavenP" wh_get "$sname")
               [[ -z "$squery" ]] && {
@@ -1328,13 +1332,16 @@ function getwW_info(){
     printf '%-13s: %s\n' "$1-getwW" "$info"
 }
 
+# $1 : notexpired
+# $1 : 1 (hide), 0 (expose)
+# $3 : AND/OR
 function getWT_info(){
     info=$(
         while read -r s ; do
             ! [[ -z "$s" ]] && printf '\t\t - %s\n' "$s"
         done <<< "$(getwstags "$1" )"
     )
-    name="ws${workspace}_tags_c_${notexpired}"
+    name="ws${workspace}_tags_c_$1"
     category=$( python "$wallhavenP" wh_get "$name" )
     if [[ ! -z "$info" ]] ; then
         info=$(
@@ -1343,14 +1350,27 @@ function getWT_info(){
         )
         (( $2 == 1 )) && info="***************"
     fi
-    printf '%-13s: %s\n' "$1-get(A/O)T" "$info"
+    printf '%-13s: %s\n' "$1-get${3::1}T" "$info"
 }
 
 function getAT_info(){
-        getWT_info "$1" "$2" "AND/OR"
+    cm=$(wsgetMode $1 )
+    rel="AND"
+    [[ "$cm" == "getOT" ]] && {
+        rel="OR"
+    }
+    modes+=" $cm "
+    getWT_info "$1" "$2" "$rel"
 }
 
 function getOT_info(){
+    cm=$(wsgetMode $1 )
+    rel="AND"
+    [[ "$cm" == "getOT" ]] && {
+        rel="OR"
+    }
+    modes+=" $cm "
+    getWT_info "$1" "$2" "$rel"
     return
 }
 
@@ -1427,6 +1447,7 @@ function f_info(){
         echo -en "\e[1A"
         echo
     fi
+    hide=0
     mode0="$(python "$wallhavenP" wh_get "ws${workspace}_mode_0" )_0"
     mode1="$(python "$wallhavenP" wh_get "ws${workspace}_mode_1" )_1"
     if (( $notexpired == 0 ))
@@ -1440,17 +1461,20 @@ function f_info(){
     while read -r l ; do
         desc="${l#*:}"
         m="${l%% *}"
+        [[ $modes == *"$m"* ]] && continue
         f="${m}_info"
         printf '\033[1;0m'
         [[ "${m}_0" == "$cmode" ]] && printf '\033[1;32m'
         [[ "${m}_0" == "$amode" ]] && printf '\033[1;35m'
         "$f" 0 0
+        #>&2 printf '\033[1;31mm:%s   cm:%s\033[1;0m:::%s\n' "${m}_1" "$amode" "$modes"
         printf '\033[1;0m'
         [[ "${m}_1" == "$cmode" ]] && printf '\033[1;32m'
         [[ "${m}_1" == "$amode" ]] && printf '\033[1;35m'
         "$f" 1 $hide
     done <<< "$(modes_f)"
 }
+
 function all_info(){
     ! [[ -z "$1" ]] && {
         workspace=$1
@@ -1483,7 +1507,12 @@ function print_url(){
 function cm_f(){
     cm=$(wsgetMode)
     modes_f|grep "$cm"
-    data=$(${cm}_info "$notexpired" 0 | cut -d: -f2)
+    rel="AND"
+    [[ "$cm" == "getOT" ]] && {
+        cm="getAT"
+        rel="OR"
+    }
+    data=$(${cm}_info "$notexpired" 0 "$rel" | cut -d: -f2)
     data=${data:1}
     data=${data//		 - /     - }
     echo "list: $data"
@@ -1511,16 +1540,7 @@ function list_tags(){
         printf("%s\n",$name)
     }
     '
-    #while read -r l ; do
-    #    id=$(echo "$l" | cut -d: -f1 )
-    #    name=$(echo "$l" | cut -d: -f2 )
-    #    category=$(echo "$l" | cut -d: -f3 )
-    #    printf '\033[1;0m%10d : ' "$id"
-    #    [[ "$category" == d ]] && printf '\033[1;32m'
-    #    [[ "$category" == m ]] && printf '\033[1;34m'
-    #    [[ "$category" == s ]] && printf '\033[1;31m'
-    #    printf '%s\n' "$name"
-    #done<<< "$(python "$wallhavenP" gettagslike "$c" "$1" )"
+    exit
 }
 
 function getwstags(){
@@ -1693,11 +1713,37 @@ function iter_f(){
     exit
 }
 
+function best_tags(){
+    s=5
+    if [[ -z  "$1" ]]
+        then c='*'
+        else c=$1
+    fi
+    if (( $notexpired == 0 )) && [[ "$c" != d ]] ; then
+        (( $( pass_f) == 0 )) && c="d"
+        echo -en "\e[1A"
+        echo
+    fi
+    python "$wallhavenP" gettagsbystars "$c" "$s"|
+    awk -F: '{
+        id=1
+        name=2
+        c=3
+        printf("\033[1;0m%10d : ",$id)
+        if ( $c == "d" ) printf("\033[1;32m")
+        if ( $c == "m" ) printf("\033[1;34m")
+        if ( $c == "s" ) printf("\033[1;31m")
+        printf("%s\n",$name)
+    }'
+    exit
+}
+
 case "$1" in
             "")     ;;
      af|addfav)     addFav "$2"  ;;
     al|addlist)     addFAVLIST "$2" "$3" ;;
            atw)     add_tag_to_w ;;
+            bt)     best_tags "$2" ;;
              c)     echo "$( _pic_ )" ; exit ;;
             cl)     cl=1 ;;
             cm)     cm_f ; exit ;;
