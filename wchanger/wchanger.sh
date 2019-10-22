@@ -916,6 +916,7 @@ function printOrd(){
     python "$wallhavenP" getordered "$c" 0 50000 > "$tmp_list"
     case "$1" in
         o)
+            ! [[ -z "$2" ]] && sed -i "1,$2"d "$tmp_list"
             feh -f "$tmp_list" 2> /dev/null
             exit
             ;;
@@ -973,7 +974,7 @@ function listthem(){
     case "$mode" in
               getFav) printFav  "$1"       ; exit;;
                getLD) printDir  "$1"       ; exit;;
-               getOr) printOrd  "$1"       ; exit;;
+               getOr) printOrd  "$1" "$2"  ; exit;;
                getOT) printWT   "$1" "or"  ; exit;;
                getAT) printWT   "$1" "and" ; exit;;
         getDir|getwW) printWdir "$1"       ; exit;;
@@ -1772,7 +1773,7 @@ case "$1" in
        infoall)     all_info "$2" ; exit;;
           iter)     iter_f "$2" ;;
           keys)     f_keys ;;
-        l|list)     listthem "$2" ;;
+        l|list)     listthem "$2" "$3" ;;
             lm)     list_modes_f ; exit ;;
              o)     feh "$( _pic_ )" & disown ; exit ;;
             ow)

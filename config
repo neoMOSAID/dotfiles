@@ -286,7 +286,7 @@ bindsym control+shift+less		    exec --no-startup-id  ~/OneDrive/OneDrive/linux/
 #startup
 #exec  		    --no-startup-id wicd-gtk -t
 #exec		    --no-startup-id google-drive-ocamlfuse ~/gDrive
-exec		    --no-startup-id firefox
+#exec		    --no-startup-id firefox
 #exec		    --no-startup-id pidgin
 exec		    --no-startup-id mpd
 exec            --no-startup-id /usr/lib/geoclue-2.0/demos/agent
