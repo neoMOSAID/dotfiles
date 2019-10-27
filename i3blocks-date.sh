@@ -14,11 +14,15 @@ case "$BLOCK_BUTTON" in
     4) wsi=$((wsi-1))
        (( $wsi < 1 )) && wsi=12
        wsn=$( bash /home/mosaid/.i3/workspaces.sh $wsi )
-       i3-msg "workspace $wsn" ;;
+       i3-msg "workspace $wsn"
+       #dunstify -u normal -r "$msgId"  "workspace $wsn"
+       ;;
     5) wsi=$((wsi+1))
         (( $wsi > 12 )) && wsi=1
        wsn=$( bash /home/mosaid/.i3/workspaces.sh $wsi )
-       i3-msg "workspace $wsn" ;;
+       i3-msg "workspace $wsn"
+       #dunstify -u normal -r "$msgId"  "workspace $wsn"
+       ;;
 esac
 
 

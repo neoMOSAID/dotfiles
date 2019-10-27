@@ -1,0 +1,3 @@
+#!/bin/bash
+wmctrl -lp|grep -v wmctrl | grep feh|awk -F'-' '{print $NF}'| cut -d. -f1
+
