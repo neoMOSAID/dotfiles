@@ -31,8 +31,8 @@ if ! [[ -z "$pid" ]]
                     i3-msg "workspace $WorkSpaceName;  exec --no-startup-id lxterminal -e bicon.bin ncmpcpp "
                     ;;
                 3) $mp toggle  >/dev/null ;;
-                4) $mp prev    >/dev/null ;;
-                5) $mp next    >/dev/null ;;
+                4) $mp volume -2|awk 'NR==3{print $2}' ;;
+                5) $mp volume +2|awk 'NR==3{print $2}' ;;
             esac
             if (( ${#str} > $size )) ; then
                 tmp1=${str%%#*}		#first part of str (before # )

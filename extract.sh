@@ -9,20 +9,21 @@ err() {
 }
 
 file="$(readlink -f "$file")"
-mkdir "$file-extDir"
+mkdir "$file-extDir" 2>/dev/null
 dir="$file-extDir"
 case "$file" in
-        *.tar.bz2)   tar xjf     "$file"  -C "$dir"    ;;
-        *.tar.gz)    tar xzf     "$file"  -C "$dir"    ;;
-        *.bz2)       bunzip2     "$file"               ;;
-        *.rar)       unrar e     "$file"               ;;
-        *.gz)        gunzip      "$file"               ;;
-        *.tar)       tar xf      "$file"  -C "$dir"    ;;
-        *.tbz2)      tar xjf     "$file"  -C "$dir"    ;;
-        *.tgz)       tar xzf     "$file"  -C "$dir"    ;;
-        *.zip)       unzip       "$file"  -d "$dir"    ;;
-        *.Z)         uncompress  "$file"               ;;
-        *.7z)        7z x        "$file"  -o"$dir"    ;;
+        *.tar.bz2)   tar -xjf        "$file"  -C "$dir"    ;;
+        *.tar.gz)    tar -xzf        "$file"  -C "$dir"    ;;
+        *.tar.lz)    tar --lzip -xvf "$file"  -C "$dir"    ;;
+        *.bz2)       bunzip2         "$file"               ;;
+        *.rar)       unrar e         "$file"               ;;
+        *.gz)        gunzip          "$file"               ;;
+        *.tar)       tar xf          "$file"  -C "$dir"    ;;
+        *.tbz2)      tar xjf         "$file"  -C "$dir"    ;;
+        *.tgz)       tar xzf         "$file"  -C "$dir"    ;;
+        *.zip)       unzip           "$file"  -d "$dir"    ;;
+        *.Z)         uncompress      "$file"               ;;
+        *.7z)        7z x            "$file"  -o"$dir"    ;;
         *)           echo "'$file' cannot be extracted by $SCRIPTNAME" ;;
 esac
 
