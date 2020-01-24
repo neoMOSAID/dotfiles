@@ -26,12 +26,13 @@ httpHeader="X-API-Key: $APIKEY"
 arg_1="$1"      #one,many
 arg_2="$2"      #tag, squery
 arg_3="$3"      #sdm
-arg_4="$4"      #v
+arg_4="$4"      #v for verbose
+arg_5="$5"      #page
 
-LOCATION="$wallhavenDIR/.ind/s-$ITERATION/"
+LOCATION="$wallhavenDIR/.ind/s-$ITERATION"
 case "$arg_3" in
     d) FILTER=100
-       LOCATION="$wallhavenDIR/d-$ITERATION/" ;;
+       LOCATION="$wallhavenDIR/d-$ITERATION" ;;
     m) FILTER=010 ;;
     s) FILTER=001 ;;
     sm|ms) FILTER=011 ;;
@@ -49,6 +50,8 @@ fi
 LOCATION+="/$arg_2"
 [[ ! -d "$LOCATION" ]] && mkdir -p "$LOCATION"
 cd "$LOCATION" || exit
+
+echo "downloading to $LOCATION"
 
 function gettags(){
     rm -f "${tmpfile}_$1" 2>/dev/null
@@ -100,6 +103,7 @@ function getFile_f(){
     if (( $downloaded == 1 ))
         then
             FILE="$(python "$wallhavenP" get "$imgID" )"
+            printf "# "
         else
             FILE=$(downloadit_f)
     fi
@@ -136,8 +140,8 @@ lastpage=$(jq -r ".meta.last_page" "$pageFile" )
 if [[ -z "$arg_5" ]] ; then
     FIRST=1
 fi
-FIRST=71
-for (( i=72 ; i<=$lastpage ; i++ )) ; do
+FIRST=1
+for (( i=$FIRST ; i<=$lastpage ; i++ )) ; do
     s1="search?page=$i&categories=101&purity=$FILTER&"
     s1+="sorting=date_added&order=desc&q=$squery"
     echo "page $i/$lastpage"

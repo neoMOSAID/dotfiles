@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# this script downloads a single wallpaper
+# by its id from wallhaven
+# it requires the id (get it from wallhaven) as first argument
+# example id : 5w6319
 
 SCRIPTPATH="$(dirname $(realpath "$0") )"
 wallhavenP="$SCRIPTPATH/wchangerDB.py"

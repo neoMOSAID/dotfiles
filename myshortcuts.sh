@@ -1,39 +1,43 @@
 #!/bin/bash
 file="${HOME}/.i3/conky/shortcuts"
-echo "use_xft yes
-xftfont MyriadPro:size=12
-xftalpha 0.8
-text_buffer_size 4096
-draw_graph_borders no
-update_interval 1
-background no
-total_run_times 0
+echo 'conky.config = {
+use_xft =true,
+font ="MyriadPro:size=12",
+xftalpha =0.8,
+text_buffer_size =4096,
+draw_graph_borders =false,
+update_interval =1,
+background =false,
+total_run_times =0,
 
-own_window yes
-own_window_type conky
-own_window_type override
-own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
-own_window_class Conky
-own_window_argb_visual yes
-own_window_transparent no
+own_window =true,
+own_window_type ="conky",
+own_window_type ="override",
+own_window_hints ="undecorated,below,sticky,skip_taskbar,skip_pager",
+own_window_class ="Conky",
+own_window_argb_visual =true,
+own_window_transparent =false,
 
-double_buffer yes
-draw_shades no
-draw_outline no
-draw_borders no
-default_color FFFFFF
+double_buffer =true,
+draw_shades =false,
+draw_outline =false,
+draw_borders =false,
+default_color ="FFFFFF",
 
-alignment top_right
-gap_x 10
-gap_y 60
+alignment ="top_right",
+gap_x =10,
+gap_y =40,
 
-uppercase no
-override_utf8_locale yes
+uppercase =false,
+override_utf8_locale =true,
 
-own_window_argb_value 0
-own_window_colour 000000
-minimum_size 500 0
-TEXT" >| "${file}"
+own_window_argb_value =0,
+own_window_colour ="000000",
+}
+
+conky.text = [[
+
+'>| "${file}"
 echo '${if_match "${exec cat /tmp/my_i3_ws}" == "1" }\' >> "$file"
 echo '${if_match "${exec  /home/mosaid/.i3/is_workspace_empty.sh}" == "0" }\' >> "$file"
 echo '\
@@ -64,8 +68,11 @@ cat ~/.i3/config | grep ^binds\
             printf("%s\n",substr($0,0,39));
             }' \
      >> "$file"
-echo '${endif}' >> "$file"
-echo '${endif}' >> "$file"
+echo '${endif}
+${endif}
+
+]]
+' >> "$file"
 
 
 

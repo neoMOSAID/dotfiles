@@ -14,7 +14,7 @@ fi
 while true ; do
 	sleep 5
     pplay_pid="$( "$pplayScript" pid )"
-    if [[ ! -z $pplay_pid ]] ; then
+    if [[ -n $pplay_pid ]] ; then
 		nowPlaying=$( bash "$pplayScript" title )
         if `echo "$nowPlaying" | grep 'watch?v=' >/dev/null`
             then continue

@@ -1,0 +1,11 @@
+[Unit]
+Description=Wallpaper Changer for i3
+Documentation=https://github.com/neoMOSAID/wchanger
+
+[Service]
+ExecStart=~/.config/wchanger/wchanger-engine.sh
+PIDFile=/run/wchanger.pid
+Restart=no
+
+[Install]
+WantedBy=default.target

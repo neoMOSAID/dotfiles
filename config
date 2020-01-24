@@ -14,13 +14,12 @@ floating_modifier $mod
 #bindsym    $mod+Return 		exec --no-startup-id i3-sensible-terminal
 bindsym     $mod+Return 		exec --no-startup-id lxterminal
 bindsym     $mod+t 			    exec --no-startup-id lxterminal
-bindsym     mod1+s 	            exec --no-startup-id lxterminal
+bindsym     mod1+s 	            exec --no-startup-id xterm
 
 
 
 
 # kill focused window
- bindsym     $mod+Shift+Q 	    kill
  bindsym     mod1+x 		    kill
  bindsym     button3 	        floating toggle
 
@@ -62,8 +61,12 @@ bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b
  # enter fullscreen mode for the focused container
  bindsym $mod+f fullscreen toggle
 
+ # Make the currently focused window a scratchpad
+#bindsym $mod+s move scratchpad
+# Show the first scratchpad window
+ bindsym $mod+Shift+s scratchpad show
  # change container layout (stacked, tabbed, toggle split)
- bindsym $mod+s layout stacking
+ #bindsym $mod+s layout stacking
  bindsym $mod+z layout tabbed
  bindsym $mod+e layout toggle split
 
@@ -154,6 +157,9 @@ set $ws13 	       "13"
  bindsym $mod+control+Shift+parenright  	move container to workspace  "24"
  bindsym $mod+control+Shift+equal      	    move container to workspace  "25"
 
+ bindsym $mod+m  exec   --no-startup-id ~/.i3/move_to_ws.sh
+ bindsym $mod+shift+m  exec   --no-startup-id ~/.i3/move_to_ws.sh move
+
  # dual monitor settings
  #exec_always --no-startup-id xrandr --output HDMI-1 --right-of eDP-1
  set $firstmonitor eDP1
@@ -170,14 +176,15 @@ set $ws13 	       "13"
 
 assign [class="Transmission-gtk"] $ws1
 assign [class="Navigator|firefox"] $ws2
-#assign [class="Clementine|mpv|vlc"] $ws3
 assign [class="libreoffice-calc|libreoffice-writer"] $ws5
 assign [class="Chromium"] $ws5
-assign [class="Evince|Transmission-gtk"] $ws6
 assign [class="Tor Browser"] $ws7
 assign [class="VirtualBox Manager"] $ws7
-assign [class="VirtualBox Machine"] $ws7
+assign [class="sqlitebrowser|DB Browser for SQLite"] $ws6
+assign [class="Evince|Org.gnome.gedit"] $ws6
+assign [class="VirtualBox Machine|VirtualBox Machine"] $ws6
 assign [class="obs|explorer.exe|Wine|huniepop.exe|joey_pc.exe"] $ws11
+assign [class="openshot|QtCreator|TeXstudio"] $ws11
 #
 #
 #some window parameters
@@ -187,6 +194,7 @@ for_window [class="Pidgin|Woeusbgui|Wicd-client.py"] floating enable border norm
 for_window [class="VirtualBox Manager|florence|Florence"] floating enable border normal
 for_window [class="TelegramDesktop|Qalculate-gtk"] floating enable border normal
 for_window [class="feh"] floating enable move absolute position 0px 0px
+for_window [class="Lxterminal|lxterminal"] resize set 1200 700
 #for_window [class="VirtualBox Machine"] floating enable, resize set 1601 900, move position 0 0
 
 # reload the configuration file
@@ -227,17 +235,34 @@ mode "resize" {
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 
+#Polybar to replace the default i3statusbar:
+#exec_always --no-startup-id $HOME/.config/polybar/launch.sh boot
+
 bar {
-#mode hide
-#hidden_state hide
-#modifier Mod1
-    font pango:FontAwesome 15
-    status_command i3blocks -c ~/.i3/i3blocks.conf
+    colors {
+        background #000000
+        # statusline #00A5FF #that neon blue
+        separator #000000
+        focused_workspace  #4c7899 #285577 #ffffff
+        active_workspace   #333333 #5f676a #ffffff
+        inactive_workspace #333333 #222222 #888888
+        urgent_workspace   #2f343a #900000 #ffffff
+    }
+    font pango:FontAwesome Bold 14
+    tray_output none
+    status_command i3blocks -c ~/.i3/top-bar/i3blocks.conf
     position 	top
 #bindsym --release button3 	exec --no-startup-id scrot '%Y-%m-%d-%s_$wx$h.png' -e 'mv $f ~/Pictures/' && mplayer ~/.i3/Nikon.ogg
-#mode hide
-#hidden_state hide
-#modifier Mod4
+}
+
+bar {
+    font pango:FontAwesome Bold 20
+    status_command i3blocks -c ~/.i3/bottom-bar/i3blocks.conf
+    position 	bottom
+    modifier    Mod4
+    mode        hide
+    hidden_state hide
+    workspace_buttons no
 }
 
 # Pulse Audio controls
@@ -269,15 +294,16 @@ bindsym mod1+control+o			    exec --no-startup-id  ~/.i3/screenshot.sh 2
 #other keyboard shortcuts
 bindsym $mod+l				        exec --no-startup-id  betterlockscreen --lock
 bindsym $mod+n				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/playFromClipboard.sh npr
-bindsym $mod+m      			    exec --no-startup-id  ~/.i3/user.sh menu
+#bindsym $mod+m      			    exec --no-startup-id  ~/.i3/user.sh menu
 bindsym mod1+space   	            exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh pp
+bindsym control+mod1+space   	    exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh m
 bindsym mod1+n				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh n
 bindsym mod1+b				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh p
 bindsym mod1+v				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh v
 bindsym mod1+c				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh vv
 bindsym mod1+r				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh r
 bindsym mod1+w				        exec --no-startup-id  ~/.i3/pplay/play.sh
-bindsym mod1+f				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts1/conkyfont.sh
+#bindsym mod1+f				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts1/conkyfont.sh
 bindsym mod1+d				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh eglllr
 bindsym mod1+t				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/myBash_functions.sh ttor
 bindsym control+less			    exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/ws.sh ++
@@ -288,20 +314,21 @@ bindsym control+shift+less		    exec --no-startup-id  ~/OneDrive/OneDrive/linux/
 #exec		    --no-startup-id google-drive-ocamlfuse ~/gDrive
 #exec		    --no-startup-id firefox
 #exec		    --no-startup-id pidgin
-exec		    --no-startup-id mpd
+exec		    --no-startup-id mpd /home/mosaid/.mpd/dir1/mpd.conf
+exec		    --no-startup-id mpd /home/mosaid/.mpd/dir2/mpd.conf
 exec            --no-startup-id /usr/lib/geoclue-2.0/demos/agent
 exec		    --no-startup-id nm-applet
-#exec            --no-startup-id transmission-gtk -m
+exec            --no-startup-id transmission-gtk -m
 exec		    --no-startup-id udiskie
 exec		    --no-startup-id ~/.i3/start-conky.sh
 exec		    --no-startup-id ~/.i3/prayerTime.sh
 exec		    --no-startup-id ~/.i3/pplay/pplayEngine.sh
-exec		    --no-startup-id ~/.i3/trigger/mycommands.sh
-exec		    --no-startup-id ~/.i3/wchanger/wchanger-engine.sh
+#exec		    --no-startup-id ~/.i3/wchanger/wchanger-engine.sh
 exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
 exec  	        --no-startup-id redshift
 exec_always	    --no-startup-id numlockx on
-exec_always	    --no-startup-id compton --config ~/.i3/compton.conf
+exec_always	    --no-startup-id picom --config ~/.i3/picom.conf
+exec_always     --no-startup-id xkb-switch --i3
 
 set $mode_display Mirrored (c) , Ext Screen (v) , HDMI ON (b) , HDMI OFF (n)
 mode "$mode_display" {
@@ -324,6 +351,8 @@ mode "$mode_display" {
 
 #keyboard layout
 exec_always --no-startup-id "setxkbmap -model pc104 -layout fr,ar -variant ,, -option grp:alt_shift_toggle"
+#bindsym --release Caps_Lock exec --no-startup-id pkill -SIGRTMIN+11 i3blocks
+#bindsym --release Num_Lock  exec --no-startup-id pkill -SIGRTMIN+11 i3blocks
 
 #switch to greeter and login
 #bindsym $mod+twosuperior exec dm-tool switch-to-greeter
@@ -340,20 +369,36 @@ mode "$playFromClipboard" {
 
  bindsym mod1+p mode "$playFromClipboard"
 
+set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
+mode "$mode_system" {
+    bindsym l exec --no-startup-id i3exit.sh lock, mode "default"
+    bindsym e exec --no-startup-id i3exit.sh logout, mode "default"
+    bindsym s exec --no-startup-id i3exit.sh suspend, mode "default"
+    bindsym h exec --no-startup-id i3exit.sh hibernate, mode "default"
+    bindsym r exec --no-startup-id i3exit.sh reboot, mode "default"
+    bindsym Shift+s exec --no-startup-id i3exit.sh shutdown, mode "default"
+
+    # back to normal: Enter or Escape
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+ bindsym $mod+Shift+q mode "$mode_system"
+
 #wallpaper changer keys
-bindsym mod1+g				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh p
-bindsym mod1+h				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh dir
-bindsym mod1+j				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh fav
-bindsym mod1+k				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh sdd
-bindsym mod1+l				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh stt
-bindsym mod1+m				        exec --no-startup-id  ~/.i3/wchanger/wchanger.sh u
-bindsym mod1+comma			    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh -
-bindsym mod1+semicolon		    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh +
-bindsym mod1+colon		    	    exec --no-startup-id  ~/.i3/wchanger/wchanger.sh fix
-bindsym mod1+exclam 		    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh list
-bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.i3/wchanger/wchanger.sh af
-bindsym mod1+asterisk		    	exec --no-startup-id  ~/.i3/wchanger/wchanger.sh rf
-bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.i3/wchanger/wchanger.sh setmode
-bindsym mod1+dollar		    	    exec --no-startup-id  ~/.i3/wchanger/wchanger.sh x
+bindsym mod1+f				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh freeze
+bindsym mod1+g				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh p
+bindsym mod1+h				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh dir
+bindsym mod1+j				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh fav
+bindsym mod1+k				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh sdd
+bindsym mod1+l				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh stt
+bindsym mod1+m				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh u
+bindsym mod1+comma			    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh -
+bindsym mod1+semicolon		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh +
+bindsym mod1+colon		    	    exec --no-startup-id  ~/.config/wchanger/wchanger.sh fix
+bindsym mod1+exclam 		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh list
+bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.config/wchanger/wchanger.sh af
+bindsym mod1+asterisk		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh rf
+bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.config/wchanger/wchanger.sh setmode
+bindsym mod1+dollar		    	    exec --no-startup-id  ~/.config/wchanger/wchanger.sh x
 
 

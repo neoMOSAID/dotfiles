@@ -15,7 +15,7 @@ case "$mimetype" in
     image/gif)                  viewnior "$file" & disown ;;
     image/*)                    feh "$file" & disown ;;
     text/* | */xml)             lxterminal -e vim "$file"  ;;
-    video/* | audio/*)          mpv --really-quiet --loop "$file" & disown ;;
+    video/* | audio/*)          mpv --force-window=yes  --really-quiet --loop "$file" & disown ;;
     application/pdf)            okular "$file" & disown ;;
     application/octet-stream)
                                 if [[ "${file#*.}" == "MP3" ]]

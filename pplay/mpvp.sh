@@ -26,12 +26,14 @@ case "$1" in
        3 : al choarae
        4 : Annour
        5 : Al hajj
+       6 : AL baqara
        " ;;
     1) file="/home/mosaid/Music/Quran/mariam/mariam.mp3" ;;
     2) file="/home/mosaid/Music/Quran/111/021.mp3" ;;
     3) file="/home/mosaid/Music/Quran/222/1988-1999 - AN-CHOARAE - 227 Ayah.mp3" ;;
     4) file="/home/mosaid/Music/Quran/annour/024 Annour .mp3" ;;
     5) file="/home/mosaid/Music/Quran/111/022.mp3" ;;
+    6) file="/home/mosaid/Music/Quran/111/002.mp3" ;;
     p)
         f_pid
         exit

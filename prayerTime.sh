@@ -8,6 +8,14 @@ if (( $is_running > 1 )) && [[ -z "$1" ]] ; then
     exit 0
 fi
 
+dir="${HOME}/.i3/conky/salat"
+declare -A v
+v["Fajr"]=1
+v["Dhuhr"]=2
+v["Asr"]=3
+v["Maghrib"]=4
+v["Isha"]=5
+
 function CURL (){
     userAgent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:48.0) "
     userAgent+="Gecko/20100101 Firefox/48.0"
@@ -50,11 +58,17 @@ while true ; do
             m=59
             s=59
         else
-            dunstify -u critical -r "$msgId" "Prayer Time " "its time for Salat Al $nextPrayerName"
+            pn=${v[$nextPrayerName]}
+            dunstify -u critical -r "$msgId"  "$(cat "$dir/t") $(cat "$dir/$pn")"
             CURL 'https://www.islamicfinder.org/' \
             |sed -n -e '/Upcoming Prayer/{N;N;N;N;N;N;N;s/<[^>]*>//g;s/\s\s*/ /g;p}' \
             >| "/tmp/nextPrayerTime"
             continue
     fi
     echo " Upcoming Prayer $nextPrayerName $h:$m:$s" >| "/tmp/nextPrayerTime"
+    echo " Upcoming Prayer $nextPrayerName $h:$m:$s" >| "/tmp/nextPrayerTime"
+    pn=${v[$nextPrayerName]}
+    Atext="$(cat "$dir/s") $(cat "$dir/$pn") $(cat "$dir/a")"
+    Atext+="  $(echo "$h:$m:$s"|rev)"
+    echo "$Atext " >| "/tmp/nextPrayerTimeA"
 done

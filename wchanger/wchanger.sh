@@ -140,7 +140,8 @@ function modes_f(){
     echo "getDir :get wallpapers by dir (wallhaven)"
     echo "getLD :local dir (not wallhaven)"
     echo "getwW :web or offline ( by search tag)"
-    echo "getOr :all available wallpapers (by category)"
+    echo "getOr :all/number wallpapers (by category)"
+    echo "getN  :last 10 new wallpapers (by category)"
     echo "getAT :wallpapers by tags (AND) "
     echo "getOT :wallpapers by tags (OR) "
     echo "getP :a single unchanging wallpaper"
@@ -192,6 +193,7 @@ function f_help(){
     _printhelp "dir"                           "set local wallpapers directory"
     _printhelp "fav"                           "change favsList"
     _printhelp "f|fix"                         "change CW's category"
+    _printhelp "freeze"                        "freeze on CW for all workspaces"
     _printhelp "g [number]"                    "jump to wallpaper"
     _printhelp "get"                           "get"
     _printhelp "h,help"                        "print this help"
@@ -295,18 +297,22 @@ function printFav(){
     index=$(python "$wallhavenP" wh_get "ws${workspace}_${fid}_i_$notexpired" )
     [[ -z "$index" ]] && index=1
     python "$wallhavenP" getfavs "$fid" | sed 's/^[0-9]*://g' > "$tmp_list"
+    m_W='1920'
+    m_H='1080'
     case "$1" in
         o)
             feh -f "$tmp_list" 2> /dev/null
             return
+            ;;
+        0)
+            index=1
+            index2=$((index+50))
             ;;
         a)
             m_W='1920'
             index2=$((index+120))
             ;;
         *)
-            m_W='1920'
-            m_H='1080'
             index2=$((index+50))
     esac
     sed -n -i "$index,$index2"p  "$tmp_list"
@@ -389,12 +395,19 @@ function pass_f(){
 # $1 workspace
 # $2 f
 function changeFavList(){
-    ! [[ -z "$1" ]] && workspace=$1
+    arg_1=$1
+    if [[ -n "$2" ]]
+        then arg_2=$2
+        else arg_2=$1
+    fi
+    number='^[0-9]*$'
+    [[ -n "$arg_1" ]] && [[ "$arg_1" =~ $number ]] && workspace=$arg_1
     msg="select fav list for workspace $workspace"
     c=$( printf "d\nm\ns" \
         |rofi -i -dmenu -p "category" -width -30 )
-    if [[ "$c" != d ]] && [[ "$c" != 'm' ]] && [[ $notexpired == "0" ]] ; then
-        [[ "$2" != "f" ]] \
+    if [[ "$c" != d ]] && [[ $notexpired == "0" ]] ; then
+        #[[ "$c" != 'm' ]] &&
+        [[ "$arg_2" != "f" ]] \
         && dunstify -u normal -r "$msgId" "wallpaper changer" "not permitted" \
         && exit
         (( $( pass_f) == 0 )) && {
@@ -489,7 +502,6 @@ function fix_m(){
 }
 
 # $1 : n,p,"",number
-# $2 : number of paths to fetch
 function getOr(){
     pause=$(
         python "$wallhavenP" wh_get "ws${workspace}_pause_$notexpired"
@@ -507,13 +519,31 @@ function getOr(){
         >&2 echo "first use ? run : $(basename "$0") soc"
         exit
     }
+    orderedCountLIMIT="ws${workspace}_ordered_limit_${category}_${notexpired}"
+    LIMIT=$(python "$wallhavenP" wh_get "$orderedCountLIMIT" )
+    if [[ -z "$LIMIT" ]] ; then
+        >&2 echo "number of wallpapers to fetch unset"
+        >&2 echo "getting all available wallpapers"
+        >&2 echo "set limit (last 10 for example/ 0 for all available) ?"
+        >&2 echo "  > run : $(basename "$0") sol"
+    fi
     if (( $cl == 1 )) ; then
-        echo "all available wallpapers (category $category)"
+        if [[ -z "$LIMIT" ]] || [[ $LIMIT == "0" ]]
+            then
+                echo "all wallpapers (category $category)"
+            else
+                echo "last $LIMIT new wallpapers (category $category)"
+        fi
         exit
     fi
-    name="ws${workspace}_orderd_i_${category}_${notexpired}"
+    name="ws${workspace}_ordered_i_${category}_${notexpired}"
     index=$(python "$wallhavenP" wh_get "$name" )
-    N=$(python "$wallhavenP" getorderedcount "$category" )
+    if [[ -z "$LIMIT" ]] || [[ $LIMIT == "0" ]]
+        then
+            N=$(python "$wallhavenP" getorderedcount "$category" )
+        else
+            N=$LIMIT
+    fi
     index=$((index+goto))
     case "$1" in
         ""|+)
@@ -531,9 +561,7 @@ function getOr(){
             fi
     esac
     python "$wallhavenP" wh_set "$name"  "$index"
-    limit=1
-    ! [[ -z "$2" ]] && limit=$2
-    pic="$(python "$wallhavenP" getordered "$category" "$index" "$limit" )"
+    pic="$(python "$wallhavenP" getordered "$category" "$index" 1 )"
     if [[ -z "$pic" ]] ; then
         >&2 echo "empty pic"
         exit
@@ -701,6 +729,7 @@ function set_web_id (){
 function set_category_f(){
     name="$1"
     list=$(
+        [[ -n "$2" ]] && echo "$2"
         printf "d\nm\ndm\n"
         (( $notexpired == 1 )) && printf "s\nds\nsm\n"
     )
@@ -714,7 +743,7 @@ function set_category_f(){
 
 function set_dir_c(){
     cname="ws${workspace}_wdir_c_${notexpired}"
-    set_category_f "$cname"
+    set_category_f "$cname" "$1"
 }
 
 
@@ -726,6 +755,16 @@ function set_web_c(){
 function set_ordered_c(){
     name="ws${workspace}_ordered_c_${notexpired}"
     set_category_f "$name"
+}
+
+function set_ordered_l(){
+    read -r -p "set number of wallpapers to get: " nn
+    number='^[0-9]+$'
+    ! [[ $nn =~ $number ]] && exit
+    category="$(get_ordered_c)"
+    orderedCountLIMIT="ws${workspace}_ordered_limit_${category}_${notexpired}"
+    python "$wallhavenP" wh_set "$orderedCountLIMIT" $nn
+    echo "done."
 }
 
 # $1 notexpired
@@ -911,7 +950,7 @@ function printOrd(){
         exit
     fi
     c=$(get_ordered_c)
-    name="ws${workspace}_orderd_i_${c}_${notexpired}"
+    name="ws${workspace}_ordered_i_${c}_${notexpired}"
     index=$(python "$wallhavenP" wh_get "$name" )
     python "$wallhavenP" getordered "$c" 0 50000 > "$tmp_list"
     case "$1" in
@@ -1050,6 +1089,20 @@ function wDisable(){
     echo "wallpaper changing is disabled."
 }
 
+function freeze_mode(){
+    freeze=$(python "$wallhavenP" wh_get "freeze" )
+    if [[ $freeze == "0" ]]
+        then freeze=1
+             msg="freeze on"
+        else freeze=0
+             msg="freeze off"
+    fi
+    python "$wallhavenP" wh_set "freeze"  "$freeze"
+    dunstify -u normal -r "$msgId" "wallpaper changer" "$msg"
+    echo "$msg"
+    exit
+}
+
 function wsSetMode(){
     ! [[ -z "$1" ]] && workspace=$1
     if  (( $notexpired == 0 )) && (( $workspace > 0 && $workspace <=7 ))
@@ -1079,9 +1132,10 @@ function wsgetMode(){
     name="ws${workspace}_mode_$notexpired"
     mode=$(python "$wallhavenP" wh_get "$name" )
     if [[ -z "$mode" ]] ; then
-        echo "mode not defined yet"
-        dunstify -u normal -r "$msgId" "wallpaper changer $workspace" "mode not defined yet"
-        exit
+        mode=getOR
+        #echo "mode not defined yet"
+        #dunstify -u normal -r "$msgId" "wallpaper changer $workspace" "mode not defined yet"
+        #exit
     fi
     if [[ $1 == x ]]
         then $mode "$2" "$3"
@@ -1534,13 +1588,19 @@ function list_tags(){
         id=1
         name=2
         c=3
-        printf("\033[1;0m%10d : ",$id)
-        if ( $c == "d" ) printf("\033[1;32m")
-        if ( $c == "m" ) printf("\033[1;34m")
-        if ( $c == "s" ) printf("\033[1;31m")
-        printf("%s\n",$name)
+        printf("\033[1;0m%7d : ",$id)
+        if ( $c == "m" ) {
+            printf("\033[1;34m")
+        } else if ( $c == "s" ) {
+            printf("\033[1;31m")
+        } else {
+            printf("\033[1;32m")
+        }
+        printf("%-25s",$name)
+        if (NR % 3 == 0 ) printf "\n"
     }
     '
+    echo
     exit
 }
 
@@ -1762,6 +1822,7 @@ case "$1" in
            dir)     dirHandler ;;
            fav)     changeFavList "$2" "$3" ;;
          f|fix)     fix_m ;;
+        freeze)     freeze_mode ;;
              g)     goto="$2"; goto=$((goto-1)) ;;
            get)    getData  ;;
         h|help)     f_help ;;
@@ -1790,8 +1851,9 @@ case "$1" in
             rtt)    rwstags ;;
               s)    starTag "$2" "$3" ;;
             sdd)    setDir "$2" ;;
-            sdc)    set_dir_c  ;;
+            sdc)    set_dir_c "$2" ;;
             soc)    set_ordered_c  ;;
+            sol)    set_ordered_l  ;;
             swc)    set_web_c  ;;
             swi)    set_web_id "$2" ;;
             stt)    addwsTag "$2" ;;
@@ -1813,8 +1875,11 @@ case "$1" in
 esac
 
 
-wsgetMode x "$1"
-
+freeze=$(python "$wallhavenP" wh_get "freeze" )
+if [[ $freeze == "0" ]]
+    then wsgetMode x "$1"
+    else echo "freezed"
+fi
 
 sleep 1.2
 

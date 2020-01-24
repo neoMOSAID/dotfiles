@@ -1,5 +1,5 @@
-
-if mpc --host=127.0.0.1 --port=6601 |grep -F "[paused]">/dev/null
+#!/bin/bash
+if ! mpc --host=127.0.0.1 --port=6601 |grep -F "[paused]">/dev/null
     then echo playing
     exit
 fi

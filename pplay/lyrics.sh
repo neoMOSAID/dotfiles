@@ -16,7 +16,7 @@ fi
 lastLyrics="/tmp/lastLyrics"
 glllrenable=$(cat /home/mosaid/.gllrenable)
 if (( "$glllrenable" == 0 )) ; then
-    echo "" >| "$lastLyrics"
+    #echo "" >| "$lastLyrics"
     echo "$artist ** $title"
     echo "getting lyrics is disabled"
     exit

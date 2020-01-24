@@ -105,11 +105,13 @@ function f_showText(){
     cmd='{ "command": ["get_property", "playlist-count"] }'
     N=$( echo "$cmd" \
         | socat - "$mpvsocketfile" \
-        | sed 's/[{}"]//g;s/,error:success//;s/data://' )
+        | jq '.data'
+    )
     cmd='{ "command": ["get_property", "playlist-pos"] }'
     n=$( echo "$cmd" \
         | socat - "$mpvsocketfile" \
-        | sed 's/[{}"]//g;s/,error:success//;s/data://' )
+        | jq '.data'
+    )
     n=$((n+1))
     text="$n/$N"
     cmd='{ "command": [ "show-text", "'$text'" ] }'
@@ -142,11 +144,33 @@ function m_play() {
     echo "$pid" >| "$pidfile"
 }
 
+function f_time () {
+    cmd='{ "command": ["get_property", "time-pos"] }'
+    t=$( echo "$cmd" \
+        | socat - "$mpvsocketfile" 2>/dev/null \
+        | jq '.data' \
+    )
+    echo "$(date --date "@$t"  '+%H:%M:%S' )"|
+    sed 's/00://'
+}
+
+function f_totaltime () {
+    cmd='{ "command": ["get_property", "duration"] }'
+    t=$( echo "$cmd" \
+        | socat - "$mpvsocketfile" 2>/dev/null \
+        | jq '.data' \
+    )
+        echo "$(date --date "@$t"  '+%H:%M:%S' )"|
+            sed 's/00://'
+}
+
 function f_title () {
     cmd='{ "command": ["get_property", "media-title"] }'
     title=$( echo "$cmd" \
         | socat - "$mpvsocketfile" 2>/dev/null \
-        | sed 's/[{}"]//g;s/,error:success//;s/data://' )
+        | jq '.data' \
+        | sed 's/"//g'
+    )
     if (( ${#title} <= 1 )) ; then
         title=$(youtube-dl -j "$(f_url)" 2>/dev/null \
             |jq -r ".alt_title"
@@ -236,7 +260,8 @@ function f_list(){
         if (NR == v ) printf("\033[1;31m%5d|%s\n",x,$0);
         else printf("\033[1;32m%5d|\033[1;0m%s\n",x,$0);
         }' \
-    | less +"$index"
+    | sed 's/,request_id:0//g' \
+    | less +"$index" -R
 }
 
 function f_kill(){
@@ -466,7 +491,8 @@ function f_Nfiles(){
     cmd='{ "command": ["get_property", "playlist-count"] }'
     N=$( echo "$cmd" \
         | socat - "$mpvsocketfile" \
-        | sed 's/[{}"]//g;s/,error:success//;s/data://' )
+        | jq '.data'
+    )
     echo $N
 }
 
@@ -511,6 +537,8 @@ case "$1" in
             sl|load) f_load "$@"  ;;
              o|open) f_open "$2" ;;
                   N) f_Nfiles ;;
+               time) f_time ;;
+          totaltime) f_totaltime ;;
                   +) f_playNext ;;
                   -) f_playPrev ;;
                   *) f_play "$@" ;;

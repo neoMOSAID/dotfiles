@@ -1,49 +1,52 @@
-use_xft yes
-xftfont MyriadPro:size=17
-xftalpha 0.8
-text_buffer_size 4096
-draw_graph_borders no
-update_interval 1
-background no
-total_run_times 0
+conky.config = {
+    use_xft =true,
+font ='DejaVu Sans Mono:size=16',
+    xftalpha =0.1,
+    update_interval =1,
+    total_run_times =0,
 
-own_window yes
-own_window_type conky
-own_window_type override
-own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
-own_window_class Conky
-own_window_argb_visual yes
-own_window_transparent yes
+    own_window =true,
+    own_window_type ="conky",
+    own_window_type ="override",
+    own_window_transparent =true,
+    own_window_hints ="undecorated,below,sticky,skip_taskbar,skip_pager",
+    own_window_colour ="000000",
+    own_window_argb_visual =true,
+    own_window_argb_value =255,
 
-double_buffer yes
-draw_shades no
-draw_outline no
-draw_borders no
-default_color FFFFFF
+    double_buffer =true,
+    maximum_width =900,
+    draw_shades =false,
+    draw_outline =false,
+    border_width = 1,
+    draw_borders =false,
+    draw_graph_borders =false,
+    default_color ="white",
+    default_shade_color ="red",
+    default_outline_color ="green",
+    alignment ="top_left",
+    gap_x =30,
+    gap_y =60,
+    no_buffers =true,
+    uppercase =false,
+    cpu_avg_samples =2,
+    net_avg_samples =1,
+    override_utf8_locale =true,
+    use_spacer ="none",
+}
 
-alignment top_left
-minimum_size 180 5
-maximum_width 800
-gap_x 15
-gap_y 60
-
-uppercase no
-override_utf8_locale yes
-
-TEXT
+conky.text = [[
 ${if_match "${exec cat ~/.gllrenable}" == "1" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "8" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "10" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "13" }\
 ${if_match "${exec /home/mosaid/.i3/conky/conky-helper.sh}" == "playing" }\
 #${exec /home/mosaid/OneDrive/OneDrive/linux/scripts3/xcolor.sh }
-#${execi 3 cat "/tmp/lastLyrics" |head -n 36}\
-${endif}
-${endif}
-${endif}
-${endif}
-${endif}
-
-
-
+${execi 3 cat "/tmp/lastLyrics" 2>/dev/null |head -n 37}\
+${endif}\
+${endif}\
+${endif}\
+${endif}\
+${endif}\
+]]
 
