@@ -26,7 +26,7 @@ CURL 'https://www.islamicfinder.org/' \
 |sed -n -e '/Upcoming Prayer/{N;N;N;N;N;N;N;s/<[^>]*>//g;s/\s\s*/ /g;p}' \
 >| "/tmp/nextPrayerTime"
 
-if ! [[ -z "$1" ]] ; then exit ; fi
+if [[ -n "$1" ]] ; then exit ; fi
 
 while true ; do
     sleep 1
@@ -65,7 +65,6 @@ while true ; do
             >| "/tmp/nextPrayerTime"
             continue
     fi
-    echo " Upcoming Prayer $nextPrayerName $h:$m:$s" >| "/tmp/nextPrayerTime"
     echo " Upcoming Prayer $nextPrayerName $h:$m:$s" >| "/tmp/nextPrayerTime"
     pn=${v[$nextPrayerName]}
     Atext="$(cat "$dir/s") $(cat "$dir/$pn") $(cat "$dir/a")"

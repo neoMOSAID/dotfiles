@@ -24,7 +24,7 @@ default_color ="FFFFFF",
 
 alignment ="top_right",
 gap_x =10,
-gap_y =40,
+gap_y =30,
 
 uppercase =false,
 override_utf8_locale =true,
@@ -53,16 +53,15 @@ WIN+Return${goto 230} lxterminal
 WIN+t${goto 230} lxterminal
 ALT+s${goto 230} xterm
 WIN+x${goto 230} "rofi -show combi "
-WIN+w${goto 230} mylocate.sh
-WIN+c${goto 230} "i3-dmenu-desktop --dmenu='dmenu...
+WIN+c${goto 230} mylocate.sh
+WIN+ALT+x${goto 230} "i3-dmenu-desktop --dmenu='dmenu...
+WIN+w${goto 230} move_to_ws.sh
 Print${goto 230} screenshot.sh 1
 ALT+control+p${goto 230} screenshot.sh 1
 ALT+control+o${goto 230} screenshot.sh 2
 WIN+l${goto 230} betterlockscreen --lock
-WIN+n${goto 230} playFromClipboard.sh npr
-WIN+m${goto 230} user.sh menu
 ALT+space${goto 230} media-controls.sh pp
-control+ALT+space${goto 230} media-controls.sh s
+control+ALT+space${goto 230} media-controls.sh m
 ALT+n${goto 230} media-controls.sh n
 ALT+b${goto 230} media-controls.sh p
 ALT+v${goto 230} media-controls.sh v
@@ -84,6 +83,7 @@ ALT+comma${goto 230} wchanger.sh -
 ALT+semicolon${goto 230} wchanger.sh +
 ALT+colon${goto 230} wchanger.sh fix
 ALT+exclam${goto 230} wchanger.sh list
+WIN+ALT+exclam${goto 230} wchanger.sh list o
 ALT+ugrave${goto 230} wchanger.sh af
 ALT+asterisk${goto 230} wchanger.sh rf
 ALT+dead_circumflex${goto 230} wchanger.sh setmode

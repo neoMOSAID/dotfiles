@@ -1,8 +1,9 @@
 #!/bin/bash
+title="Go to"
+[[ "$1" == "move" ]] && title="Move window To"
 ws=$(
-    zenity --entry --text="workspace:" --title="Move window"
+    zenity --entry --text="workspace:" --title="$title"
 )
-
 number='^[0-9]+$'
 if ! [[ "$ws" =~ $number ]] || (( $ws == 0 ))
     then exit

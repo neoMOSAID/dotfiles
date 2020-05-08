@@ -1,9 +1,11 @@
 #!/bin/bash
+
 [[ -t 0 ]] && BLOCK_BUTTON=3
 COLOR="#00ffff"
 echo "$USER"|awk '{print toupper($_)}'
 echo
 echo "$COLOR"
+
 
 # error codes :
 # 0 : OK , 100%
@@ -68,20 +70,23 @@ function themenu(){
 }
 
 [[ -z "$BLOCK_BUTTON" ]] && [[ "$1" == "menu" ]] && BLOCK_BUTTON=1
+msgId=11112
 case "$BLOCK_BUTTON" in
     4)
-        ~/.i3/wchanger/wchanger.sh - > /tmp/wchanger_wlog
+        msg=$(~/.config/wchanger/wchanger.sh - 2>&1)
+        dunstify -u low -r "$msgId"  "wchanger prev" "$msg"
         exit
     ;;
     5)
-        ~/.i3/wchanger/wchanger.sh   > /tmp/wchanger_wlog
+        msg=$(~/.config/wchanger/wchanger.sh  2>&1)
+        dunstify -u low -r "$msgId"  "wchanger next" "$msg"
         exit
     ;;
     1) themenu
        exit
     ;;
     3)
-        ~/.i3/wchanger/wchanger.sh  x
+        ~/.config/wchanger/wchanger.sh  x
         exit
 esac
 

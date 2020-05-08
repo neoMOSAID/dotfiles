@@ -121,6 +121,3 @@ l=$(light|sed 's/\.[0-9]*//')
 echo "$ICON$percentage|$l$r $ch"
 echo
 echo "$COLOR"
-
-
-

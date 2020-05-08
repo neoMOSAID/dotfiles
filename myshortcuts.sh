@@ -26,7 +26,7 @@ default_color ="FFFFFF",
 
 alignment ="top_right",
 gap_x =10,
-gap_y =40,
+gap_y =30,
 
 uppercase =false,
 override_utf8_locale =true,
@@ -53,7 +53,7 @@ ${color lightblue}\
 ' >> "$file"
 cat ~/.i3/config | grep ^binds\
     | sed -E 's/bindsym//g;
-           s/exec --no-startup-id//g;
+           s/exec[ ]*--no-startup-id//g;
            s/\$mod/WIN/g;
            s/mod1/ALT/g;
            s@~/(.*)/@@g;

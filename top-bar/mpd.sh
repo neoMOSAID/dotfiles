@@ -5,7 +5,7 @@ if (( $is_running >= 2 )) && [[ -n "$BLOCK_BUTTON" ]] ; then
     exit 1
 fi
 size=35
-msgId="991041"
+msgId="991046"
 myPath="${HOME}/OneDrive/OneDrive/linux"
 pplayScript="${HOME}/.i3/pplay/play.sh"
 pid="$(  "$pplayScript" pid )"
@@ -21,7 +21,9 @@ function mpv_str(){
     str1+="$(  "$pplayScript" N )"
     str1+=" $(  "$pplayScript" time )/"
     str1+="$(  "$pplayScript" totaltime )"
-    if (( $( $pplayScript m ) == 9 ))
+    [[ -z "$( "$pplayScript" pid )" ]] && return
+    mode=$( $pplayScript m )
+    if ((  $mode == 9 || $mode == 8 ))
         then str2="##############"
         else str2="$( "$pplayScript" title )"
     fi
@@ -100,10 +102,10 @@ function mode1_mpd_cmd(){
                 >/dev/null
             ;;
         5) msg=$( $mp volume -2|awk 'NR==3{print $2}' )
-            dunstify  -r "$msgId" "music player daemon: $msg"
+            dunstify  -u low  -r "$msgId" "music player daemon: $msg"
             ;;
         4) msg=$( $mp volume +2|awk 'NR==3{print $2}' )
-            dunstify  -r "$msgId" "music player daemon: $msg"
+            dunstify  -u low  -r "$msgId" "music player daemon: $msg"
             ;;
     esac
 
@@ -119,10 +121,10 @@ function mode2_mpd_cmd(){
             ;;
         3) $mp toggle  >/dev/null ;;
         5) msg=$( $mp next |head -1 )
-            dunstify  -r "$msgId" "music player daemon:" "$msg"
+            dunstify  -u low  -r "$msgId" "music player daemon:" "$msg"
             ;;
         4) msg=$( $mp prev|head -1 )
-            dunstify  -r "$msgId" "music player daemon:" "$msg"
+            dunstify  -u low  -r "$msgId" "music player daemon:" "$msg"
             ;;
     esac
 
@@ -168,4 +170,3 @@ fi
 #    #tmp2=${tmp2:(-yyy)}
 #    str2="${tmp1}|${tmp2}"
 #fi
-

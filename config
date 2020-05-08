@@ -25,8 +25,8 @@ bindsym     mod1+s 	            exec --no-startup-id xterm
 
 # start rofi (a program launcher)
 bindsym     $mod+x 	    exec --no-startup-id "rofi -show combi "
-bindsym     $mod+w 	    exec --no-startup-id ~/.i3/mylocate.sh
-bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b -i -l 49 -fn monospace:20 -p run'"
+bindsym     $mod+c 	    exec --no-startup-id ~/.i3/mylocate.sh
+bindsym     $mod+mod1+x	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b -i -l 49 -fn monospace:20 -p run'"
 
 # change focus
 #bindsym $mod+j focus left
@@ -62,11 +62,11 @@ bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b
  bindsym $mod+f fullscreen toggle
 
  # Make the currently focused window a scratchpad
-#bindsym $mod+s move scratchpad
-# Show the first scratchpad window
- bindsym $mod+Shift+s scratchpad show
+ bindsym $mod+s move scratchpad
+ # Show the first scratchpad window
+ bindsym $mod+q scratchpad show
  # change container layout (stacked, tabbed, toggle split)
- #bindsym $mod+s layout stacking
+ bindsym $mod+a layout stacking
  bindsym $mod+z layout tabbed
  bindsym $mod+e layout toggle split
 
@@ -77,7 +77,7 @@ bindsym     $mod+c 	    exec --no-startup-id "i3-dmenu-desktop --dmenu='dmenu -b
  bindsym $mod+space focus mode_toggle
 
  # focus the parent container
- bindsym $mod+q focus parent
+ #bindsym $mod+q focus parent
 
  # focus the child container
  #bindsym $mod+d focus child
@@ -129,7 +129,7 @@ set $ws13 	       "13"
  bindsym $mod+control+mod1+colon             workspace "0"
 
  # move focused container to workspace
- bindsym $mod+Shift+ampersand      	move container to workspace $ws1
+ bindsym $mod+Shift+ampersand	    move container to workspace $ws1
  bindsym $mod+Shift+eacute  	    move container to workspace $ws2
  bindsym $mod+Shift+quotedbl  	    move container to workspace $ws3
  bindsym $mod+Shift+apostrophe  	move container to workspace $ws4
@@ -157,8 +157,8 @@ set $ws13 	       "13"
  bindsym $mod+control+Shift+parenright  	move container to workspace  "24"
  bindsym $mod+control+Shift+equal      	    move container to workspace  "25"
 
- bindsym $mod+m  exec   --no-startup-id ~/.i3/move_to_ws.sh
- bindsym $mod+shift+m  exec   --no-startup-id ~/.i3/move_to_ws.sh move
+bindsym $mod+w  exec   --no-startup-id ~/.i3/move_to_ws.sh
+ bindsym $mod+shift+w  exec   --no-startup-id ~/.i3/move_to_ws.sh move
 
  # dual monitor settings
  #exec_always --no-startup-id xrandr --output HDMI-1 --right-of eDP-1
@@ -194,8 +194,24 @@ for_window [class="Pidgin|Woeusbgui|Wicd-client.py"] floating enable border norm
 for_window [class="VirtualBox Manager|florence|Florence"] floating enable border normal
 for_window [class="TelegramDesktop|Qalculate-gtk"] floating enable border normal
 for_window [class="feh"] floating enable move absolute position 0px 0px
-for_window [class="Lxterminal|lxterminal"] resize set 1200 700
+#for_window [class="Lxterminal|lxterminal"] resize set 1200 700
+for_window [class="Xfce4-terminal"] floating enable border normal
+for_window [class="Xfce4-terminal"] resize set 1600 700
+for_window [class="Xfce4-terminal"] move absolute position 200 100
 #for_window [class="VirtualBox Machine"] floating enable, resize set 1601 900, move position 0 0
+#
+
+#new_window normal
+#set $background  #e0eaf9
+#
+## class                 border  backgr. text    indicator child_border
+#client.focused          #271f17 #271f17 #AAAAAA #AAAAAA   #C93F2C
+#client.focused_inactive #21211d #1d2121 #a1a1a1 #484e50   #1d2121
+#client.unfocused        #333333 #222222 #888888 #292d2e   #222222
+#client.urgent           #4a4b4c #4a4b4c #AAAAAA #AAAAAA   #4a4c4b
+#client.placeholder      #000000 #0c0c0c #AAAAAA #000000   #0c0c0c
+#
+#client.background       #111111
 
 # reload the configuration file
  bindsym $mod+Shift+c reload
@@ -203,6 +219,7 @@ for_window [class="Lxterminal|lxterminal"] resize set 1200 700
  bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
  bindsym $mod+Shift+e 	exec --no-startup-id "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+ bindsym $mod+control+Escape exec --no-startup-id 'i3-msg exit'
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -248,22 +265,22 @@ bar {
         inactive_workspace #333333 #222222 #888888
         urgent_workspace   #2f343a #900000 #ffffff
     }
-    font pango:FontAwesome Bold 14
-    tray_output none
+    font pango:FontAwesome Bold 9
+#tray_output none
     status_command i3blocks -c ~/.i3/top-bar/i3blocks.conf
     position 	top
 #bindsym --release button3 	exec --no-startup-id scrot '%Y-%m-%d-%s_$wx$h.png' -e 'mv $f ~/Pictures/' && mplayer ~/.i3/Nikon.ogg
 }
 
-bar {
-    font pango:FontAwesome Bold 20
-    status_command i3blocks -c ~/.i3/bottom-bar/i3blocks.conf
-    position 	bottom
-    modifier    Mod4
-    mode        hide
-    hidden_state hide
-    workspace_buttons no
-}
+#bar {
+#    font pango:FontAwesome Bold 20
+#    status_command i3blocks -c ~/.i3/bottom-bar/i3blocks.conf
+#    position 	bottom
+#    modifier    Mod4
+#    mode        hide
+#    hidden_state hide
+#    workspace_buttons no
+#}
 
 # Pulse Audio controls
  bindsym XF86AudioRaiseVolume 	exec --no-startup-id amixer -D pulse sset Master 2%+
@@ -293,7 +310,7 @@ bindsym mod1+control+o			    exec --no-startup-id  ~/.i3/screenshot.sh 2
 
 #other keyboard shortcuts
 bindsym $mod+l				        exec --no-startup-id  betterlockscreen --lock
-bindsym $mod+n				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/playFromClipboard.sh npr
+ bindsym $mod+n				        exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts2/playFromClipboard.sh npr
 #bindsym $mod+m      			    exec --no-startup-id  ~/.i3/user.sh menu
 bindsym mod1+space   	            exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh pp
 bindsym control+mod1+space   	    exec --no-startup-id  ~/OneDrive/OneDrive/linux/scripts0/media-controls.sh m
@@ -316,15 +333,14 @@ bindsym control+shift+less		    exec --no-startup-id  ~/OneDrive/OneDrive/linux/
 #exec		    --no-startup-id pidgin
 exec		    --no-startup-id mpd /home/mosaid/.mpd/dir1/mpd.conf
 exec		    --no-startup-id mpd /home/mosaid/.mpd/dir2/mpd.conf
-exec            --no-startup-id /usr/lib/geoclue-2.0/demos/agent
+#exec            --no-startup-id /usr/lib/geoclue-2.0/demos/agent
 exec		    --no-startup-id nm-applet
-exec            --no-startup-id transmission-gtk -m
+#exec            --no-startup-id transmission-gtk -m
 exec		    --no-startup-id udiskie
-exec		    --no-startup-id ~/.i3/start-conky.sh
-exec		    --no-startup-id ~/.i3/prayerTime.sh
+#exec		    --no-startup-id ~/.i3/start-conky.sh
+#exec		    --no-startup-id ~/.i3/prayerTime.sh
 exec		    --no-startup-id ~/.i3/pplay/pplayEngine.sh
-#exec		    --no-startup-id ~/.i3/wchanger/wchanger-engine.sh
-exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
+#exec		    --no-startup-id ~/.i3/onedriveMonitor.sh
 exec  	        --no-startup-id redshift
 exec_always	    --no-startup-id numlockx on
 exec_always	    --no-startup-id picom --config ~/.i3/picom.conf
@@ -385,20 +401,21 @@ mode "$mode_system" {
  bindsym $mod+Shift+q mode "$mode_system"
 
 #wallpaper changer keys
-bindsym mod1+f				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh freeze
-bindsym mod1+g				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh p
-bindsym mod1+h				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh dir
-bindsym mod1+j				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh fav
-bindsym mod1+k				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh sdd
-bindsym mod1+l				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh stt
-bindsym mod1+m				        exec --no-startup-id  ~/.config/wchanger/wchanger.sh u
-bindsym mod1+comma			    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh -
+bindsym mod1+f				exec --no-startup-id  ~/.config/wchanger/wchanger.sh freeze
+bindsym mod1+g				exec --no-startup-id  ~/.config/wchanger/wchanger.sh p
+bindsym mod1+h				exec --no-startup-id  ~/.config/wchanger/wchanger.sh dir
+bindsym mod1+j				exec --no-startup-id  ~/.config/wchanger/wchanger.sh fav
+bindsym mod1+k				exec --no-startup-id  ~/.config/wchanger/wchanger.sh sdd
+bindsym mod1+l				exec --no-startup-id  ~/.config/wchanger/wchanger.sh stt
+bindsym mod1+m				exec --no-startup-id  ~/.config/wchanger/wchanger.sh u
+bindsym mod1+comma			exec --no-startup-id  ~/.config/wchanger/wchanger.sh -
 bindsym mod1+semicolon		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh +
-bindsym mod1+colon		    	    exec --no-startup-id  ~/.config/wchanger/wchanger.sh fix
+bindsym mod1+colon		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh fix
 bindsym mod1+exclam 		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh list
-bindsym mod1+ugrave		    	    exec --no-startup-id  ~/.config/wchanger/wchanger.sh af
+bindsym $mod+mod1+exclam 		exec --no-startup-id  ~/.config/wchanger/wchanger.sh list o
+bindsym mod1+ugrave		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh af
 bindsym mod1+asterisk		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh rf
 bindsym mod1+dead_circumflex		exec --no-startup-id  ~/.config/wchanger/wchanger.sh setmode
-bindsym mod1+dollar		    	    exec --no-startup-id  ~/.config/wchanger/wchanger.sh x
+bindsym mod1+dollar		    	exec --no-startup-id  ~/.config/wchanger/wchanger.sh x
 
-
+bindsym mod1+a				exec --no-startup-id ~/OneDrive/OneDrive/linux/scripts3/TV/tv.sh

@@ -40,6 +40,7 @@ conky.text = [[
 
 ${if_match "${exec cat /tmp/my_i3_ws}" != "8" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "10" }\
+${if_match "${exec cat /tmp/my_i3_ws}" != "11" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "13" }\
 ${if_match "${exec cat /tmp/my_i3_ws}" != "0" }\
 ${color EAEAEA}${font Amiri:pixelsize=50}${exec ~/.i3/conky/conky-prayer.sh}${font}
@@ -52,8 +53,6 @@ ${endif}\
 ${endif}\
 ${endif}\
 ${endif}\
+${endif}\
 ]]
-
-
-
 

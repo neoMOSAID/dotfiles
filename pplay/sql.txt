@@ -1,0 +1,4 @@
+select t1.file, t1.title from FILES t1
+INNER join LISTS t2
+on t1.id = t2.fileid
+where t2.listid = 4 and t1.removed = 0
